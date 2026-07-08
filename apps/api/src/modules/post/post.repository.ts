@@ -9,7 +9,6 @@
 import { and, desc, eq, sql } from 'drizzle-orm'
 import { db } from '@/db/client'
 import { posts, postTags, tags } from '@/db/schema'
-import { HttpError } from '@/lib/errors'
 import type { ListPostsQuery } from './post.schema'
 
 /** 文章完整列（repository 返回行含全部业务字段） */
@@ -90,11 +89,14 @@ export const postRepository = {
     return { items, total: countResult[0]?.count ?? 0 }
   },
 
-  /** 插入文章（slug 由 service 决定：published 时传，draft 时传 null） */
-  async insert(data: typeof posts.$inferInsert): Promise<PostRow> {
+  /**
+   * 插入文章（slug 由 service 决定：published 时传，draft 时传 null）。
+   * 纯数据层：不抛 HttpError，空结果（insert+returning 无返回，几乎不可能）返回 null，
+   * 由 service 判空抛 internal（对齐 #17 user.repository 范式，doc 02 §三）。
+   */
+  async insert(data: typeof posts.$inferInsert): Promise<PostRow | null> {
     const [row] = await db.insert(posts).values(data).returning(postColumns)
-    if (!row) throw HttpError.internal('文章创建失败')
-    return row
+    return row ?? null
   },
 
   /**
@@ -103,15 +105,16 @@ export const postRepository = {
    *    事务保证原子（bun:sqlite + WAL 下 db.transaction 回调内的 db 操作走同一连接）。
    *    事务外调用若 setTags 失败，会留下无标签的孤儿文章。
    *
-   * 返回创建后的文章 + 其标签。
+   * 返回创建后的文章 + 其标签；insert 失败（理论不发生）返回 null，由 service 判空。
    * data 形参用 $inferInsert 子集（Omit tagIds 后的 posts 表字段 + 作者字段），
    * 与 Drizzle 的可选类型严格对齐（exactOptionalPropertyTypes）。
    */
   async createWithTags(
     data: Omit<typeof posts.$inferInsert, 'id' | 'createdAt' | 'updatedAt'>,
     tagIds: number[],
-  ): Promise<PostRow & { tags: PostTagRow[] }> {
+  ): Promise<(PostRow & { tags: PostTagRow[] }) | null> {
     const post = await this.insert(data)
+    if (!post) return null
     await this.setTags(post.id, tagIds)
     const tags = await this.getTags(post.id)
     return { ...post, tags }
@@ -121,15 +124,15 @@ export const postRepository = {
    * 更新文章。
    * ⚠️ 显式补 updatedAt（schema 未配 $onUpdate）。
    * ⚠️ 不在此处接收 slug——slug 不可变由 service 保证（update 调用方不传 slug 字段）。
+   * 纯数据层：不抛 HttpError，文章不存在时返回 null，由 service 判空抛 notFound。
    */
-  async update(id: number, data: Partial<typeof posts.$inferInsert>): Promise<PostRow> {
+  async update(id: number, data: Partial<typeof posts.$inferInsert>): Promise<PostRow | null> {
     const [row] = await db
       .update(posts)
       .set({ ...data, updatedAt: new Date() })
       .where(eq(posts.id, id))
       .returning(postColumns)
-    if (!row) throw HttpError.notFound('文章不存在')
-    return row
+    return row ?? null
   },
 
   /** 删除文章（post_tag 外键 cascade，关联自动清除） */
@@ -144,14 +147,16 @@ export const postRepository = {
    * @param data posts 表字段（🔴 不含 slug 修改逻辑——slug 由 service 决定后传入或不传）
    * @param tagIds undefined=不动标签；数组=全量覆盖
    *
+   * 文章不存在时返回 null，由 service 判空抛 notFound。
    * data 用 Partial<typeof posts.$inferInsert>，与 Drizzle 可选类型严格对齐。
    */
   async updateWithTags(
     id: number,
     data: Partial<typeof posts.$inferInsert>,
     tagIds: number[] | undefined,
-  ): Promise<PostRow & { tags: PostTagRow[] }> {
+  ): Promise<(PostRow & { tags: PostTagRow[] }) | null> {
     const post = await this.update(id, data)
+    if (!post) return null
     if (tagIds !== undefined) {
       await this.setTags(id, tagIds)
     }

@@ -177,7 +177,9 @@ export function postTools(ctx: ToolContext) {
           data.slug = generateSlug(post.title)
         }
 
-        return db.transaction(() => postRepository.updateWithTags(id, data, tagIds))
+        const updated = await db.transaction(() => postRepository.updateWithTags(id, data, tagIds))
+        if (!updated) throw HttpError.notFound('文章不存在')
+        return updated
       },
     },
 
