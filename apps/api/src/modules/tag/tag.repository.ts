@@ -6,7 +6,6 @@
 import { desc, eq } from 'drizzle-orm'
 import { db } from '@/db/client'
 import { tags } from '@/db/schema'
-import { HttpError } from '@/lib/errors'
 
 const tagColumns = {
   id: tags.id,
@@ -42,11 +41,13 @@ export const tagRepository = {
     return row ?? null
   },
 
-  /** 创建标签（slug 由 service 传入） */
-  async create(data: { name: string; slug: string }): Promise<TagRow> {
+  /**
+   * 创建标签（slug 由 service 传入）。
+   * 纯数据层：不抛 HttpError，空结果（理论不发生）返回 null，由 service 判空（对齐 #17 范式）。
+   */
+  async create(data: { name: string; slug: string }): Promise<TagRow | null> {
     const [row] = await db.insert(tags).values(data).returning(tagColumns)
-    if (!row) throw HttpError.internal('标签创建失败')
-    return row
+    return row ?? null
   },
 
   /** 删除标签（post_tag 外键 cascade，文章关联自动清除） */

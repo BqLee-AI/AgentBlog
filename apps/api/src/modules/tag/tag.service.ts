@@ -20,10 +20,12 @@ export const tagService = {
   async create(dto: CreateTagDTO): Promise<TagRow> {
     try {
       // 直接插入，依赖 DB UNIQUE(name)/UNIQUE(slug) 防重，消除「先查后插」竞态
-      return await tagRepository.create({
+      const created = await tagRepository.create({
         name: dto.name,
         slug: generateSlug(dto.name),
       })
+      if (!created) throw HttpError.internal('标签创建失败')
+      return created
     } catch (e: unknown) {
       // SQLite UNIQUE 约束 → 409 标签已存在
       if (e instanceof Error && 'code' in e && e.code === 'SQLITE_CONSTRAINT_UNIQUE') {

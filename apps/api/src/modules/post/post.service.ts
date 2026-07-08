@@ -52,8 +52,10 @@ export const postService = {
       authorType,
       slug,
     }
-    return db.transaction(() => {
-      return postRepository.createWithTags(data, dto.tagIds)
+    return db.transaction(async () => {
+      const created = await postRepository.createWithTags(data, dto.tagIds)
+      if (!created) throw HttpError.internal('文章创建失败')
+      return created
     })
   },
 
@@ -141,8 +143,10 @@ export const postService = {
     if (rest.summary !== undefined) data.summary = rest.summary ?? null
     if (rest.coverUrl !== undefined) data.coverUrl = rest.coverUrl ?? null
 
-    return db.transaction(() => {
-      return postRepository.updateWithTags(postId, data, tagIds)
+    return db.transaction(async () => {
+      const updated = await postRepository.updateWithTags(postId, data, tagIds)
+      if (!updated) throw HttpError.notFound('文章不存在')
+      return updated
     })
   },
 
