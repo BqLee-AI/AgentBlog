@@ -10,6 +10,7 @@
 import { useEffect, type ReactNode } from 'react'
 import { useAuthStore, authStore } from '@/lib/auth-store'
 import { authApi } from '@/api/auth.api'
+import { ApiError } from '@/lib/http-error'
 import { queryClient } from '@/lib/query-client'
 import { queryKeys } from '@/lib/query-keys'
 
@@ -43,12 +44,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // 顺手写入 me 缓存，后台顶栏读当前用户可直接命中
         queryClient.setQueryData(queryKeys.me, user)
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         if (cancelled) return
-        // 401 已由 request() 处理（clear + 清缓存 + 跳登录），此处 status 会被 clear 置为 unauthenticated
-        if (authStore.getState().status !== 'unauthenticated') {
-          authStore.getState().clear()
-        }
+        // 401：request() 已处理（clear token + 清缓存 + 跳登录），status 已置 unauthenticated，无需再动
+        if (err instanceof ApiError && err.isUnauthorized) return
+
+        // 非 401（网络错误 / 5xx 等）：不丢 token，仅回退 status。
+        // token 可能仍有效（7d），守卫会跳登录，但用户重新进入页面时可凭 sessionStorage 的 token 重试，
+        // 避免瞬态故障强制登出。
+        authStore.setState({ status: 'unauthenticated' })
       })
 
     return () => {

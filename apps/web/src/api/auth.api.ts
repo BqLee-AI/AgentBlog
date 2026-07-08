@@ -22,7 +22,11 @@ export type LoginDTO = z.infer<typeof loginSchema>
 export const createUserSchema = z.object({
   username: z.string().min(3).max(32),
   password: z.string().min(6),
-  // 不允许直接建超管（后端 04 §六：仅超管可建超管）
+  // 不允许直接建超管（后端 04 §六：仅超管可建超管）。
+  // 注意：shared.roleSchema 是 [super_admin, admin, user] 全集；此处本地排除 super_admin
+  // 是建用户场景的业务约束，与 shared 并非重复定义。
+  // TODO(上提 shared)：上提时协调——建议 shared 提供 createUserRoleSchema（排除 super_admin），
+  // 或前端在 shared.roleSchema 基础上 .exclude(SUPER_ADMIN)，避免角色枚举出现三份。
   role: z.enum(['admin', 'user'] as const).default('user'),
   credits: z.number().int().min(0).default(0),
 })

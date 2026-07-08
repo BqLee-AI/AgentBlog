@@ -11,12 +11,18 @@
  *   - #5 RouterProvider / BrowserRouter
  *   - #7 ErrorBoundary（最外层）/ Toaster
  */
-import { type ReactNode, useEffect } from 'react'
+import { Suspense, lazy, type ReactNode, useEffect } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { queryClient } from '@/lib/query-client'
 import { setUnauthorizedHandler, INSUFFICIENT_CREDITS_EVENT } from '@/lib/request'
 import { AuthProvider } from '@/features/auth/use-auth'
+
+// 动态 import DevTools，确保生产 build 不打入 devtools 代码（静态 import 即使被
+// import.meta.env.DEV 条件渲染，仍可能残留在依赖图）。lazy 让 Vite 单独切 chunk，
+// 生产构建因 import.meta.env.DEV === false 而 dead-code elimination 整段移除。
+const ReactQueryDevtools = lazy(() =>
+  import('@tanstack/react-query-devtools').then((m) => ({ default: m.ReactQueryDevtools })),
+)
 
 export function RootProviders({ children }: { children: ReactNode }) {
   // 401 跳转：router 在 #5 落地前用 location 兜底（避免 request 直接依赖 router）
@@ -44,7 +50,11 @@ export function RootProviders({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         {children}
-        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+        {import.meta.env.DEV && (
+          <Suspense fallback={null}>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </Suspense>
+        )}
       </AuthProvider>
     </QueryClientProvider>
   )
