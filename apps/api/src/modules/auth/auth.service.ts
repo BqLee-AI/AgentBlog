@@ -56,21 +56,25 @@ export const authService = {
 
   /** 自助注册：固定 role=user、credits=0，不接收 role/credits 字段 */
   async register(dto: RegisterDTO): Promise<UserDTO> {
-    const [existing] = await db.select().from(users).where(eq(users.username, dto.username)).limit(1)
-    if (existing) {
-      throw HttpError.conflict('用户名已存在')
+    try {
+      // 直接插入，依赖 DB UNIQUE 约束防重复，消除「先查后插」TOCTOU 竞态
+      const [created] = await db
+        .insert(users)
+        .values({
+          username: dto.username,
+          passwordHash: await hashPassword(dto.password),
+          // role/credits 不传，走 DB 默认（user / 0）
+        })
+        .returning()
+
+      return toUserDTO(created!)
+    } catch (e: unknown) {
+      // SQLite UNIQUE 约束 → 409 用户名已存在（并发安全）
+      if (e instanceof Error && 'code' in e && e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+        throw HttpError.conflict('用户名已存在')
+      }
+      throw e
     }
-
-    const [created] = await db
-      .insert(users)
-      .values({
-        username: dto.username,
-        passwordHash: await hashPassword(dto.password),
-        // role/credits 不传，走 DB 默认（user / 0）
-      })
-      .returning()
-
-    return toUserDTO(created!)
   },
 
   /** 获取当前用户信息（/me 用） */

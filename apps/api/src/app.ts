@@ -12,6 +12,7 @@ import { logger } from 'hono/logger'
 import { ok } from '@/lib/response'
 import { errorHandler } from '@/middlewares/error-handler'
 import { api } from '@/routes'
+import { ErrorCode } from '@agentblog/shared'
 
 export const app = new Hono()
 
@@ -23,7 +24,7 @@ app.use('*', logger())
 app.onError(errorHandler)
 
 // ── 404 兜底（未匹配到的路由）──
-app.notFound((c) => c.json({ ok: false, error: { code: 'NOT_FOUND', message: '接口不存在' } }, 404))
+app.notFound((c) => c.json({ ok: false, error: { code: ErrorCode.NOT_FOUND, message: '接口不存在' } }, 404))
 
 // ── 健康检查 ──
 app.get('/health', (c) => ok(c, { status: 'running' }))
