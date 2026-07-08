@@ -7,7 +7,6 @@
 import { eq, sql, desc } from 'drizzle-orm'
 import { db } from '@/db/client'
 import { users } from '@/db/schema'
-import { HttpError } from '@/lib/errors'
 import type { Role, UserStatus } from '@agentblog/shared'
 
 /** 对外暴露的列（不含 passwordHash） */
@@ -55,24 +54,22 @@ export const userRepository = {
   },
 
   /** 改角色（补 updatedAt，schema 未配 $onUpdate） */
-  async updateRole(id: number, role: Role): Promise<UserRow> {
+  async updateRole(id: number, role: Role): Promise<UserRow | null> {
     const [updated] = await db
       .update(users)
       .set({ role, updatedAt: new Date() })
       .where(eq(users.id, id))
       .returning(userColumns)
-    if (!updated) throw HttpError.notFound('用户不存在')
-    return updated
+    return updated ?? null
   },
 
   /** 改状态（启用/禁用） */
-  async updateStatus(id: number, status: UserStatus): Promise<UserRow> {
+  async updateStatus(id: number, status: UserStatus): Promise<UserRow | null> {
     const [updated] = await db
       .update(users)
       .set({ status, updatedAt: new Date() })
       .where(eq(users.id, id))
       .returning(userColumns)
-    if (!updated) throw HttpError.notFound('用户不存在')
-    return updated
+    return updated ?? null
   },
 }
