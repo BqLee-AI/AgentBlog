@@ -98,10 +98,12 @@ export const postRepository = {
   },
 
   /**
-   * 创建文章 + 关联标签（在 service 事务内调用，使用事务 tx 无关——
-   * 这里本身走 db，但被 db.transaction 包裹时 SQLite 单连接串行，仍原子）。
-   * 返回创建后的文章 + 其标签。
+   * 创建文章 + 关联标签。
+   * ⚠️ 必须在 service 的 db.transaction 内调用：内部 this.insert + this.setTags 两步，
+   *    事务保证原子（bun:sqlite + WAL 下 db.transaction 回调内的 db 操作走同一连接）。
+   *    事务外调用若 setTags 失败，会留下无标签的孤儿文章。
    *
+   * 返回创建后的文章 + 其标签。
    * data 形参用 $inferInsert 子集（Omit tagIds 后的 posts 表字段 + 作者字段），
    * 与 Drizzle 的可选类型严格对齐（exactOptionalPropertyTypes）。
    */
@@ -136,7 +138,8 @@ export const postRepository = {
   },
 
   /**
-   * 更新文章 + 全量覆盖标签（在 service 事务内调用）。
+   * 更新文章 + 全量覆盖标签。
+   * ⚠️ 必须在 service 的 db.transaction 内调用：update + setTags 两步需原子。
    * @param id 文章 id
    * @param data posts 表字段（🔴 不含 slug 修改逻辑——slug 由 service 决定后传入或不传）
    * @param tagIds undefined=不动标签；数组=全量覆盖
@@ -158,7 +161,8 @@ export const postRepository = {
 
   /**
    * 全量覆盖某文章的标签关联（先删后插）。
-   * 在 postService.create / update 的事务内调用。
+   * ⚠️ 必须在 service 的 db.transaction 内调用：「先删后插」若事务外执行，
+   *    删成功但插失败会丢失原有关联。createWithTags / updateWithTags 已包好。
    */
   async setTags(postId: number, tagIds: number[]): Promise<void> {
     await db.delete(postTags).where(eq(postTags.postId, postId))

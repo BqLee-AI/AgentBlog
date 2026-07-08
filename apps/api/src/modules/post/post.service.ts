@@ -17,14 +17,18 @@ import { generateSlug } from '@/lib/slug'
 import { postRepository } from './post.repository'
 import type { CreatePostDTO, UpdatePostDTO, ListPostsQuery } from './post.schema'
 import type { PostRow } from './post.repository'
-import type { Role } from '@agentblog/shared'
-// 复用 #17 定义的 Actor（user.service 标注「后续所有 service 的资源归属校验复用」），
-// 不在 post 模块重复定义，保持 actor 形状单一真相源
-import type { Actor } from '@/modules/user/user.service'
+// Actor 现已上提至 @agentblog/shared（review should-fix-2），避免扇入依赖 user.service。
+// Role 同从 shared 引入。
+import type { Actor, Role } from '@agentblog/shared'
 
 /** admin+ 可管理他人资源 */
 function canManageOthers(role: Role): boolean {
   return role === 'admin' || role === 'super_admin'
+}
+
+/** 是否为该文章的作者（仅 user 作者路径；agent 作者归属判断见 07） */
+function isOwner(post: { authorType: string; authorId: number }, actorId: number): boolean {
+  return post.authorType === 'user' && post.authorId === actorId
 }
 
 export const postService = {
@@ -68,11 +72,21 @@ export const postService = {
 
   /**
    * 后台编辑用：按 id 取（含草稿），需登录。
-   * 📌 这里只做读取；写权限（能否改）由 update/remove 的归属校验把关。
+   * 📌 资源归属：已发布文章任意登录用户可读（与公开详情一致）；草稿仅 owner / admin+ 可读，
+   *    防止枚举 id 偷看他人草稿正文（review should-fix-1）。
+   * 不存在 → 404；越权读草稿 → 404（用 404 而非 403，避免暴露草稿存在性）。
    */
-  async getByIdForEdit(id: number): Promise<PostRow & { tags: { id: number; name: string; slug: string }[] }> {
+  async getByIdForEdit(
+    id: number,
+    actor: Actor,
+  ): Promise<PostRow & { tags: { id: number; name: string; slug: string }[] }> {
     const post = await postRepository.findById(id)
     if (!post) throw HttpError.notFound('文章不存在')
+
+    // 草稿做归属校验；已发布放行
+    if (post.status === 'draft' && !isOwner(post, actor.id) && !canManageOthers(actor.role)) {
+      throw HttpError.notFound('文章不存在')
+    }
     const tags = await postRepository.getTags(post.id)
     return { ...post, tags }
   },
@@ -103,8 +117,7 @@ export const postService = {
     if (!post) throw HttpError.notFound('文章不存在')
 
     // 资源归属校验
-    const isOwner = post.authorType === 'user' && post.authorId === actor.id
-    if (!isOwner && !canManageOthers(actor.role)) {
+    if (!isOwner(post, actor.id) && !canManageOthers(actor.role)) {
       throw HttpError.forbidden('无权修改他人文章')
     }
 
@@ -142,8 +155,7 @@ export const postService = {
     const post = await postRepository.findById(postId)
     if (!post) throw HttpError.notFound('文章不存在')
 
-    const isOwner = post.authorType === 'user' && post.authorId === actor.id
-    if (!isOwner && actor.role === 'user') {
+    if (!isOwner(post, actor.id) && actor.role === 'user') {
       throw HttpError.forbidden('无权删除他人文章')
     }
     await postRepository.delete(postId)

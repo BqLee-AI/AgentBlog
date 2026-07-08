@@ -78,6 +78,18 @@ export interface AuthorInfoDTO {
   ownerUsername?: string
 }
 
+/**
+ * 操作者形状（service 层资源归属校验复用，详见 docs/design/05 §四）。
+ *
+ * 跨模块契约形状（post/agent/credit/user 等 service 的 actor 入参），上提至 shared
+ * 作单一真相源，避免各 service 扇入依赖某个具体模块的导出（review should-fix-2）。
+ * 注意：这是内部接口契约，非对外响应 payload。
+ */
+export interface Actor {
+  id: number
+  role: Role
+}
+
 /** 统一响应：成功（需求 §5 机器可读，详见 docs/design/12） */
 export interface OkResponse<T> {
   ok: true

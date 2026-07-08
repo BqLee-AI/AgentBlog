@@ -48,10 +48,12 @@ postsRoutes.post('/', zodCheck('json', createPostSchema), async (c) => {
   return ok(c, { ...post, author: await withAuthor(post) }, 201)
 })
 
-// 后台编辑用：按 id 取（含草稿）
-// 📌 必须在通配 `/:slug` 之外——这里是不同字面量前缀，Hono 精确匹配 /by-id/:id
+// 后台编辑用：按 id 取（含草稿）。草稿仅 owner/admin+ 可读（review should-fix-1）
 postsRoutes.get('/by-id/:id', async (c) => {
-  const post = await postService.getByIdForEdit(Number(c.req.param('id')))
+  const post = await postService.getByIdForEdit(Number(c.req.param('id')), {
+    id: c.var.user.id,
+    role: c.var.user.role,
+  })
   return ok(c, { ...post, author: await withAuthor(post) })
 })
 
