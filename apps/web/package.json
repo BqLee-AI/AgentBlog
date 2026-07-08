@@ -1,0 +1,10 @@
+{
+  "name": "@agentblog/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo \"web 待前端同学填充\"",
+    "typecheck": "echo \"web 待前端同学填充\"",
+    "lint": "echo \"web 待前端同学填充\""
+  }
+}

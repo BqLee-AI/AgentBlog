@@ -1,8 +1,9 @@
 # 依赖
 node_modules/
 
-# 运行时数据（SQLite、上传文件）
+# 运行时数据（SQLite、上传文件）—— monorepo 各 app 下均忽略
 data/
+apps/*/data/
 *.db
 *.db-journal
 
