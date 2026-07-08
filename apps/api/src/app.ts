@@ -10,6 +10,7 @@
 import { Hono } from 'hono'
 import { logger } from 'hono/logger'
 import { ok } from '@/lib/response'
+import { api } from '@/routes'
 
 export const app = new Hono()
 
@@ -23,6 +24,6 @@ app.use('*', logger())
 // ── 健康检查 ──
 app.get('/health', (c) => ok(c, { status: 'running' }))
 
-// ── 业务路由（随模块就位后接入）──
-// app.route('/api', api)   // TODO routes/index.ts
+// ── 业务路由（按模块逐步接入）──
+app.route('/api', api)
 // app.route('/mcp', mcpHandler)  // TODO mcp/handler.ts

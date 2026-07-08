@@ -22,3 +22,10 @@ export const roleSchema = z.enum([Role.SUPER_ADMIN, Role.ADMIN, Role.USER])
 
 /** 文章状态枚举校验 */
 export const postStatusSchema = z.enum([PostStatus.DRAFT, PostStatus.PUBLISHED])
+
+/** 文章列表查询参数（公开阅读端 / 后台列表共用的最小公共子集） */
+export const listPostsQuerySchema = paginationSchema.extend({
+  tag: z.string().optional(),
+  status: postStatusSchema.optional(),
+})
+export type ListPostsQuerySchemaDTO = z.infer<typeof listPostsQuerySchema>

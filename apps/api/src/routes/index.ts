@@ -1,12 +1,17 @@
 /**
  * 路由聚合层（详见 docs/design/02 §五）
  *
- * 随各业务模块就位后逐步接入：
- *   api.route('/auth', auth)
- *   api.route('/users', users)
- *   api.route('/posts', posts)
- *   ...
+ * 当前先接入公开阅读端最小闭环：
+ *   - /posts
+ *   - /tags
  *
- * 当前为占位，待第一个业务模块（auth）实现后导出 api 并在 app.ts 接入。
+ * 其余 auth/users/agents/... 随后续 issue 逐步补齐。
  */
-export {}
+import { Hono } from 'hono'
+import { posts } from './posts.routes'
+import { tags } from './tags.routes'
+
+export const api = new Hono()
+
+api.route('/posts', posts)
+api.route('/tags', tags)

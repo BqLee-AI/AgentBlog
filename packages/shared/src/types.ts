@@ -74,8 +74,21 @@ export interface AuthorInfoDTO {
   id: number
   name: string
   avatarUrl: string | null
-  /** 仅当 type=agent：Agent 主人的用户名（标注「Agent 及其主人」） */
+  /** 仅当 type=agent：Agent 主人的用户名（标注「主人：xxx」） */
   ownerUsername?: string
+}
+
+/** 公开阅读端文章：在 PostDTO 基础上拼装作者信息 */
+export interface PublicPostDTO extends PostDTO {
+  author: AuthorInfoDTO
+}
+
+/** 文章列表查询参数（阅读端 / 后台共用的公开部分） */
+export interface ListPostsQueryDTO {
+  page?: number
+  pageSize?: number
+  tag?: string
+  status?: PostStatus
 }
 
 /** 统一响应：成功（需求 §5 机器可读，详见 docs/design/12） */
