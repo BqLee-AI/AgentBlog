@@ -16,7 +16,7 @@
  * 计费不在本文件做——MCP 由 mcp/server.ts 的 wrapTool 包装器；在线 Agent 由 runtime 的 onFinish。
  */
 import { z } from 'zod'
-import { tool as aiTool } from 'ai'
+import { tool as aiTool, jsonSchema } from 'ai'
 import { db } from '@/db/client'
 import { posts } from '@/db/schema'
 import { HttpError } from '@/lib/errors'
@@ -204,36 +204,53 @@ export function postTools(ctx: ToolContext) {
 /**
  * 把 postTools(defs) 转成 AI SDK v4 的 tool 定义（供在线 Agent streamText 用，详见 docs/design/10 §4.1）。
  *
- * AI SDK 的 tool() 接受整个 ZodObject（parameters: ZodTypeAny），不是 raw shape——
- * 与 MCP registerTool（要 raw shape）不同，故用每个工具的 schema（ZodObject 本体）。
+ * ⚠️ zod 版本兼容（must-fix）：本仓用 zod@4，但 AI SDK v4 内部用 zod@3 的 zod-to-json-schema
+ *    转换器，直接传 ZodObject 会生成 `type: null` 的 JSON Schema，被 OpenAI/DeepSeek 端点拒绝。
+ *    解法：用 zod4 原生 z.toJSONSchema() 生成正确的 JSON Schema，再经 AI SDK 的 jsonSchema()
+ *    包装（含运行时 validate 保留 refine 等校验语义），完全绕过 AI SDK 的 zod3 转换层。
  *
  * 🔴 与 MCP 复用同一份 postTools 工具定义（需求 §4.6）；本函数只做格式转换，不含业务逻辑。
  */
+
+/** 把 zod4 的 ZodObject 转成 AI SDK 的 jsonSchema（保留运行时校验，含 refine）。 */
+function toAiSchema<T>(zo: z.ZodType<T>) {
+  // z.toJSONSchema 返回 JSON Schema Draft 2020-12，AI SDK jsonSchema() 期望 JSONSchema7 类型。
+  // 运行时兼容（都是标准 JSON Schema），仅 TS 类型定义版本不同，故断言。
+  return jsonSchema<T>(z.toJSONSchema(zo) as Parameters<typeof jsonSchema>[0], {
+    validate: (val) => {
+      const r = zo.safeParse(val)
+      return r.success
+        ? { success: true as const, value: r.data }
+        : { success: false as const, error: new Error(r.error.message) }
+    },
+  })
+}
+
 export function toAiSdkTools(defs: ReturnType<typeof postTools>) {
   return {
     list_posts: aiTool({
       description: defs.list_posts.description,
-      parameters: defs.list_posts.schema,
+      parameters: toAiSchema(defs.list_posts.schema),
       execute: defs.list_posts.handler,
     }),
     get_post: aiTool({
       description: defs.get_post.description,
-      parameters: defs.get_post.schema,
+      parameters: toAiSchema(defs.get_post.schema),
       execute: defs.get_post.handler,
     }),
     create_post: aiTool({
       description: defs.create_post.description,
-      parameters: defs.create_post.schema,
+      parameters: toAiSchema(defs.create_post.schema),
       execute: defs.create_post.handler,
     }),
     update_post: aiTool({
       description: defs.update_post.description,
-      parameters: defs.update_post.schema,
+      parameters: toAiSchema(defs.update_post.schema),
       execute: defs.update_post.handler,
     }),
     delete_post: aiTool({
       description: defs.delete_post.description,
-      parameters: defs.delete_post.schema,
+      parameters: toAiSchema(defs.delete_post.schema),
       execute: defs.delete_post.handler,
     }),
   }

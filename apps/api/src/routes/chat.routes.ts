@@ -52,6 +52,12 @@ chatRoutes.post('/', async (c) => {
     messages: body.messages,
   })
 
-  // 🔴 v4 用 toDataStreamResponse（返回 SSE data stream）；不在响应里暴露 systemPrompt
-  return result.toDataStreamResponse()
+  // 🔴 v4 用 toDataStreamResponse（返回 SSE data stream）；不在响应里暴露 systemPrompt。
+  // 流内错误服务端记完整日志，客户端只收到通用提示（不泄露 LLM 端点/key/内部异常）。
+  return result.toDataStreamResponse({
+    getErrorMessage: (err) => {
+      console.error('🔴 /api/chat 流式错误:', err)
+      return '对话失败，请稍后重试'
+    },
+  })
 })
