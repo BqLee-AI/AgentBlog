@@ -8,6 +8,7 @@
  *   - 解包后端统一响应 { ok, data, error }：成功吐 data，失败抛 ApiError
  *   - 401 副作用：清 authStore + 清 queryClient 缓存 + 触发跳登录（通过可注入回调）
  *   - 402 副作用：派发 app:insufficient-credits 事件（不直接 toast，由 UI 层监听）
+ *   - multipart:true 时透传 FormData（上传），不设 Content-Type、不序列化
  *
  * 解耦边界：request 是纯逻辑层，不 import React/toast/router。
  *   - 401 的「跳登录」通过 setUnauthorizedHandler 由 app 层注入（router 在 #5 落地）。
@@ -37,6 +38,11 @@ export interface RequestOptions {
   signal?: AbortSignal
   /** 公开请求：不注入 Bearer（阅读端等） */
   public?: boolean
+  /**
+   * multipart 请求（上传等）：body 为 FormData，不手设 Content-Type
+   * （由浏览器自动带 boundary，否则后端 parseBody 无法解析），不 JSON.stringify。
+   */
+  multipart?: boolean
 }
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const
@@ -53,9 +59,11 @@ function buildUrl(path: string, query?: RequestOptions['query']): string {
 }
 
 export async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, query, signal, public: isPublic } = opts
+  const { method = 'GET', body, query, signal, public: isPublic, multipart } = opts
 
-  const headers: Record<string, string> = body ? { ...JSON_HEADERS } : {}
+  // multipart：不设 Content-Type（浏览器带 boundary），不 stringify
+  const headers: Record<string, string> =
+    body && !multipart ? { ...JSON_HEADERS } : {}
   if (!isPublic) {
     const token = authStore.getState().token
     if (token) headers.Authorization = `Bearer ${token}`
@@ -63,7 +71,7 @@ export async function request<T>(path: string, opts: RequestOptions = {}): Promi
 
   // exactOptionalPropertyTypes 下，不能传 body/signal: undefined，需条件构建 init
   const init: RequestInit = { method, headers }
-  if (body !== undefined) init.body = JSON.stringify(body)
+  if (body !== undefined) init.body = multipart ? (body as BodyInit) : JSON.stringify(body)
   if (signal) init.signal = signal
 
   const res = await fetch(buildUrl(path, query), init)

@@ -1,17 +1,21 @@
 /**
- * 登录页（最小可用版本）。
+ * 登录页。
  *
- * 本期（#5）用受控原生表单（RHF 表单体系在 #6 落地后再升级复用 loginSchema）。
+ * 用 LoginForm（RHF + zod + shared loginSchema 范式，见 #6）。
  * 登录成功读 location.state.from 回跳；无 from 跳 /admin。
  *
- * 复用 #4：authApi.login（公开请求）+ useAuthStore.setAuth。
+ * 错误处理（由 LoginForm 分流）：
+ *   - VALIDATION_ERROR（字段级）→ LoginForm 内部 setServerErrors 回填 FormMessage
+ *   - 其余（401 凭证错、5xx）→ onError → 顶部错误文案（全局 toast 在 #07 落地）
  */
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { authApi, loginSchema } from '@/api/auth.api'
-import { useAuthStore } from '@/lib/auth-store'
 import type { Location } from 'react-router-dom'
+
+import { LoginForm } from '@/features/auth/login-form'
+import { authApi } from '@/api/auth.api'
+import type { LoginDTO } from '@agentblog/shared'
+import { useAuthStore } from '@/lib/auth-store'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -19,9 +23,8 @@ export default function LoginPage() {
   const token = useAuthStore((s) => s.token)
   const setAuth = useAuthStore((s) => s.setAuth)
 
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  // 顶部全局错误（非字段级）：401 凭证错、网络错误等
+  const [globalError, setGlobalError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   // 已登录访问 /login → 直接进后台
@@ -30,29 +33,24 @@ export default function LoginPage() {
     return <Navigate to={from} replace />
   }
 
-  const onSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setError(null)
-
-    // 前端先校验（复用 loginSchema，规则与后端一致）
-    const parsed = loginSchema.safeParse({ username, password })
-    if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? '输入有误')
-      return
-    }
-
+  const onSubmit = async (values: LoginDTO) => {
+    setGlobalError(null)
     setSubmitting(true)
     try {
-      const result = await authApi.login(parsed.data)
+      const result = await authApi.login(values)
       setAuth(result.token, result.user)
-      const from = (location.state as { from?: Location } | null)?.from?.pathname ?? '/admin'
+      const from =
+        (location.state as { from?: Location } | null)?.from?.pathname ?? '/admin'
       navigate(from, { replace: true })
-    } catch (err) {
-      // err 是 ApiError，message 已是中文（后端 04 §十）
-      setError(err instanceof Error ? err.message : '登录失败')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const onError = (err: unknown) => {
+    // err 是 ApiError，message 已是中文（后端 04 §十）
+    // 字段级错误已由 LoginForm 回填，此处只展示非字段级全局错误
+    setGlobalError(err instanceof Error ? err.message : '登录失败')
   }
 
   return (
@@ -62,41 +60,9 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold">登录 AgentBlog</h1>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="username" className="text-sm font-medium">
-              用户名
-            </label>
-            <input
-              id="username"
-              autoComplete="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              placeholder="3-32 位"
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">
-              密码
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              placeholder="至少 6 位"
-            />
-          </div>
+        <LoginForm onSubmit={onSubmit} submitting={submitting} onError={onError} />
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
-
-          <Button type="submit" disabled={submitting} className="w-full">
-            {submitting ? '登录中…' : '登录'}
-          </Button>
-        </form>
+        {globalError && <p className="text-center text-sm text-destructive">{globalError}</p>}
       </div>
     </main>
   )
