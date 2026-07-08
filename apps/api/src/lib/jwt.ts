@@ -22,7 +22,7 @@ export interface JwtPayload {
  */
 function parseExpiryToSeconds(input: string): number {
   const m = /^(\d+)([smhd])?$/.exec(input.trim())
-  if (!m) throw new Error(`JWT_EXPIRES_IN 格式非法: ${input}（示例: 7d / 2h / 3600）`)
+  if (!m) throw HttpError.internal(`JWT_EXPIRES_IN 格式非法: ${input}（示例: 7d / 2h / 3600）`)
   const n = Number(m[1])
   const unit = (m[2] ?? 's') as 's' | 'm' | 'h' | 'd'
   const multipliers = { s: 1, m: 60, h: 3600, d: 86400 } as const
