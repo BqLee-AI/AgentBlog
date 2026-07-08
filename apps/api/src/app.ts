@@ -12,6 +12,7 @@ import { logger } from 'hono/logger'
 import { ok } from '@/lib/response'
 import { errorHandler } from '@/middlewares/error-handler'
 import { api } from '@/routes'
+import { mcpHandler } from '@/mcp/handler'
 import { ErrorCode } from '@agentblog/shared'
 
 export const app = new Hono()
@@ -31,4 +32,5 @@ app.get('/health', (c) => ok(c, { status: 'running' }))
 
 // ── 业务路由 ──
 app.route('/api', api)
-// app.route('/mcp', mcpHandler)  // TODO mcp/handler.ts
+// MCP Server（apiKeyMiddleware 在 handler 内挂载，与 /api 的 JWT 鉴权完全分离）
+app.route('/mcp', mcpHandler)
