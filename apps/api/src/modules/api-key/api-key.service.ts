@@ -113,7 +113,10 @@ export const apiKeyService = {
 
     // 反查 Agent 归属
     const [agent] = await db.select().from(agents).where(eq(agents.id, key.agentId)).limit(1)
-    if (!agent || (agent.userId !== actor.id && actor.role === 'user')) {
+    if (!agent) {
+      throw HttpError.notFound('Key 对应的 Agent 不存在')
+    }
+    if (agent.userId !== actor.id && actor.role === 'user') {
       throw HttpError.forbidden('无权吊销他人 Key')
     }
 

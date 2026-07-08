@@ -6,6 +6,7 @@
 import { eq } from 'drizzle-orm'
 import { db } from '@/db/client'
 import { agents } from '@/db/schema'
+import type { UpdateAgentDTO } from './agent.schema'
 
 export type AgentRow = typeof agents.$inferSelect
 
@@ -28,14 +29,12 @@ export const agentRepository = {
     return created!
   },
 
-  /** 更新（补 updatedAt，schema 未配 $onUpdate） */
-  async update(
-    id: number,
-    data: Record<string, unknown>,
-  ): Promise<AgentRow | null> {
+  /** 更新（补 updatedAt，schema 未配 $onUpdate；过滤 undefined 适配 exactOptionalPropertyTypes） */
+  async update(id: number, data: UpdateAgentDTO): Promise<AgentRow | null> {
+    const clean = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined))
     const [updated] = await db
       .update(agents)
-      .set({ ...data, updatedAt: new Date() })
+      .set({ ...clean, updatedAt: new Date() })
       .where(eq(agents.id, id))
       .returning()
     return updated ?? null
