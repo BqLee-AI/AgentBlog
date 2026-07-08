@@ -1,18 +1,17 @@
 /**
  * 应用根组件。
  *
- * 本期（#4）用 RootProviders 包裹首页：QueryClientProvider / AuthProvider / 401 跳转 / 402 监听。
- * 后续 issue 叠加：
- *   - #5 RouterProvider（替换直接渲染 HomePage）
- *   - #7 ErrorBoundary（最外层）/ Toaster
+ * RootProviders（QueryClient/AuthProvider/401 handler/402 监听/Suspense）
+ * 包裹 RouterProvider（路由树）。
  */
+import { RouterProvider } from 'react-router-dom'
 import { RootProviders } from '@/app/root-providers'
-import { HomePage } from '@/pages/public/home.page'
+import { router } from '@/app/router'
 
 export function App() {
   return (
     <RootProviders>
-      <HomePage />
+      <RouterProvider router={router} />
     </RootProviders>
   )
 }

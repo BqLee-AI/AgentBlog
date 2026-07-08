@@ -1,14 +1,14 @@
 /**
  * 全局 Provider 组装。
  *
- * 本期（#4）挂载：
+ * 挂载：
  *   - QueryClientProvider（TanStack Query）
  *   - AuthProvider（启动校验 token）
- *   - 401 handler 注册（request 触发 → 跳 /login，router 在 #5 落地后改 router.navigate）
+ *   - 401 handler 注册（request 触发 → router.navigate /login，带 from state）
  *   - 402 事件监听（console 占位，#7 接 sonner toast）
+ *   - Suspense（路由懒加载 chunk 期显示 PageSkeleton）
  *
  * 后续叠加（不在本期）：
- *   - #5 RouterProvider / BrowserRouter
  *   - #7 ErrorBoundary（最外层）/ Toaster
  */
 import { Suspense, lazy, type ReactNode, useEffect } from 'react'
@@ -16,6 +16,8 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/lib/query-client'
 import { setUnauthorizedHandler, INSUFFICIENT_CREDITS_EVENT } from '@/lib/request'
 import { AuthProvider } from '@/features/auth/use-auth'
+import { router } from '@/app/router'
+import { PageSkeleton } from '@/components/feedback/page-skeleton'
 
 // 动态 import DevTools，确保生产 build 不打入 devtools 代码（静态 import 即使被
 // import.meta.env.DEV 条件渲染，仍可能残留在依赖图）。lazy 让 Vite 单独切 chunk，
@@ -25,13 +27,12 @@ const ReactQueryDevtools = lazy(() =>
 )
 
 export function RootProviders({ children }: { children: ReactNode }) {
-  // 401 跳转：router 在 #5 落地前用 location 兜底（避免 request 直接依赖 router）
+  // 401 跳转：用 router.navigate 记住来源，登录页读 state.from 回跳
   useEffect(() => {
     setUnauthorizedHandler(() => {
-      const current = window.location.pathname
-      if (current !== '/login') {
-        // 记住来源，#5 登录页据此回跳
-        window.location.replace(`/login?from=${encodeURIComponent(current)}`)
+      const current = router.state.location
+      if (current.pathname !== '/login') {
+        router.navigate('/login', { replace: true, state: { from: current } })
       }
     })
   }, [])
@@ -49,7 +50,7 @@ export function RootProviders({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        {children}
+        <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
         {import.meta.env.DEV && (
           <Suspense fallback={null}>
             <ReactQueryDevtools initialIsOpen={false} />
