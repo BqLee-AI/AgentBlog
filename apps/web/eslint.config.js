@@ -41,7 +41,8 @@ export default [
     rules: {
       // 基础质量规则（等价 @eslint/js recommended 的关键项）
       'no-unused-vars': 'off', // 交给 @typescript-eslint/no-unused-vars
-      'no-undef': 'error',
+      // TS 文件的未声明变量由 tsc 检查；no-undef 不识别 TS lib 全局类型（RequestInit/HTMLElement 等）
+      'no-undef': 'off',
       'no-cond-assign': 'error',
       'no-constant-condition': 'warn',
       'no-debugger': 'error',
