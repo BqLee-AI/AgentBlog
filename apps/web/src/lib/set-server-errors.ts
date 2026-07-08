@@ -24,7 +24,9 @@ export function setServerErrors<T extends FieldValues>(
     if (Array.isArray(msgs) && msgs[0]) {
       // 字段名由后端给出，对应 RHF 的 name（如 "username"、"slug"）。
       // 无法静态保证 field 属于 T 的字段，故做一次窄化断言。
+      // type:'server' 标记来源，便于覆盖 RHF 已挂的本地校验错误并触发 re-render
       form.setError(field as Parameters<typeof form.setError>[0], {
+        type: 'server',
         message: msgs[0],
       })
     }

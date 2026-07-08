@@ -27,8 +27,8 @@ describe('setServerErrors', () => {
     setServerErrors(form, err)
 
     expect(form.setError).toHaveBeenCalledTimes(2)
-    expect(form.setError).toHaveBeenCalledWith('username', { message: '用户名至少 3 位' })
-    expect(form.setError).toHaveBeenCalledWith('password', { message: '密码至少 6 位' })
+    expect(form.setError).toHaveBeenCalledWith('username', { type: 'server', message: '用户名至少 3 位' })
+    expect(form.setError).toHaveBeenCalledWith('password', { type: 'server', message: '密码至少 6 位' })
   })
 
   it('空数组字段被跳过（不回填无消息的字段）', () => {
@@ -41,7 +41,7 @@ describe('setServerErrors', () => {
     setServerErrors(form, err)
 
     expect(form.setError).toHaveBeenCalledTimes(1)
-    expect(form.setError).toHaveBeenCalledWith('username', { message: '已存在' })
+    expect(form.setError).toHaveBeenCalledWith('username', { type: 'server', message: '已存在' })
   })
 
   it('非 ApiError（普通 Error）不回填', () => {
