@@ -1,0 +1,14 @@
+# 本地依赖与产物（根 .gitignore 已全局忽略，此处保险）
+node_modules/
+dist/
+*.local
+*.tsbuildinfo
+
+# 编辑器
+.vscode/
+.idea/
+
+# 环境变量（仅 .env.development/.env.production 提交，其余忽略）
+.env
+.env.local
+.env.*.local
