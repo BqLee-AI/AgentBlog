@@ -44,7 +44,7 @@
 ## 四、文档约定
 
 - 所有代码示例默认运行在 **Bun** 上，使用 TypeScript。
-- 项目为 **monorepo（Bun Workspaces）**：路径写 `backend/src/...` 时表示后端工作区；写 `packages/shared/...` 时表示共享包。
+- 项目为 **monorepo（Bun Workspaces）**：路径写 `apps/api/src/...` 时表示后端应用；写 `apps/web/...` 表示前端应用；写 `packages/shared/...` 时表示共享契约包。
 - **API 契约单一真相源**：跨前后端复用的类型、Zod schema、枚举、错误码统一放 `@agentblog/shared`，后端各模块只定义自身内部 schema。
 - 数据访问统一走 **Drizzle ORM**，不直接写裸 SQL（迁移除外）。
 - 校验统一用 **Zod**，schema 即类型来源。
