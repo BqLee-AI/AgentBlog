@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `uq_agent_user` ON `agent` (`user_id`);
