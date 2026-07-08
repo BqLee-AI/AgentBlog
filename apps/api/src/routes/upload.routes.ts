@@ -20,6 +20,12 @@ import { HttpError } from '@/lib/errors'
 
 /** purpose → 落盘子目录白名单（防 ../ 路径注入） */
 const ALLOWED_PURPOSE = ['avatar', 'cover', 'misc'] as const
+type Purpose = (typeof ALLOWED_PURPOSE)[number]
+
+/** 类型守卫：判断 purpose 是否在白名单内（避免 as 断言把脏数据伪装成合法 Purpose） */
+function isPurpose(value: string): value is Purpose {
+  return (ALLOWED_PURPOSE as readonly string[]).includes(value)
+}
 
 export const uploadRoutes = new Hono()
 
@@ -35,8 +41,8 @@ uploadRoutes.post('/', async (c) => {
   }
 
   // purpose 可选，默认 cover；非白名单值归到 misc（防恶意 purpose 注入路径）
-  const purpose = (body.purpose as string) || 'cover'
-  const dir = (ALLOWED_PURPOSE as readonly string[]).includes(purpose) ? purpose : 'misc'
+  const rawPurpose = typeof body.purpose === 'string' ? body.purpose : ''
+  const dir: Purpose = isPurpose(rawPurpose) ? rawPurpose : 'misc'
 
   validateImage(file)
   const result = await storage.save(file, dir)
