@@ -12,7 +12,7 @@
 | 操作 | super_admin | admin | user |
 |------|:-----------:|:-----:|:----:|
 | 系统级配置、角色/权限定义 | ✅ | ❌ | ❌ |
-| 用户管理（建用户、改角色） | ✅ | ✅ | ❌ |
+| 用户管理（改角色、禁用） | ✅ | ✅ | ❌ |
 | 文章管理（任意人的文章） | ✅ | ✅ | 仅自己 |
 | Credits 发放、用量统计 | ✅ | ✅ | ❌（仅看自己） |
 | 创建/管理自己的 Agent（≤1） | ✅ | ✅ | ✅ |
@@ -25,7 +25,7 @@
 
 ### 2.1 两层校验
 
-1. **角色级校验**（粗粒度）：用 `requireRole(...)` 中间件，挡掉没权限的角色。例：建用户接口只放 admin/super_admin。
+1. **角色级校验**（粗粒度）：用 `requireRole(...)` 中间件，挡掉没权限的角色。例：用户管理接口（改角色/禁用）只放 admin/super_admin。
 2. **资源级校验**（细粒度）：在 service 里判断「这个资源是不是当前用户的」。例：user 改文章要先查文章的 author_id 是否等于自己。
 
 > 💡 不能只靠中间件——中间件不知道你要操作的资源归谁。资源归属校验必须在 service 里，因为只有 service 拿到资源后才能比对。
@@ -81,7 +81,7 @@ import { requireRole } from '@/middlewares/rbac'
 usersRoutes
   .use('*', authMiddleware)
   .get('/', requireRole('admin', 'super_admin'), /* 列出用户 */)
-  .post('/', requireRole('admin', 'super_admin'), /* 建用户 */)
+  .patch('/:id', requireRole('admin', 'super_admin'), /* 改角色/禁用 */)
 ```
 
 ## 四、资源归属校验（service 层）
@@ -158,7 +158,7 @@ credits
 |------|----------|----------|
 | `POST /api/auth/login` | 公开 | — |
 | `GET /api/auth/me` | 任意登录 | — |
-| `POST /api/auth/register` | admin+ | — |
+| `POST /api/auth/register` | 公开 | — |
 | `GET /api/users` | admin+ | — |
 | `PATCH /api/users/:id/role` | super_admin | — |
 | `POST /api/posts` | 任意登录 | — |
@@ -194,8 +194,8 @@ credits
 
 | 用例 | 操作 | 预期 |
 |------|------|------|
-| user 调建用户 | POST /register | 403 |
-| admin 调建用户 | POST /register | 201 |
+| 未登录自助注册 | POST /register | 201 |
+| 注册时传 role=admin | POST /register（带 role 字段） | 422（schema 拒绝） |
 | user 改别人文章 | PATCH /posts/他人id | 403 |
 | user 改自己文章 | PATCH /posts/自己id | 200 |
 | user 看他人流水 | GET /credits/logs/他人id | 404 或 403 |
