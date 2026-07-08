@@ -3,7 +3,7 @@ name: gh-issue-create
 description: 用于为本仓库创建、拆分、补写或批量整理 GitHub 开发 issue；当讨论、设计差距、PR 评论或用户粗略需求需要先被压成可协作 issue 时使用，输出 why now、范围、非目标、未决点、验收、验证和分层风险。
 license: Proprietary
 compatibility:
-  agent: "*"
+  agent: '*'
 metadata:
   language: zh-CN
   scope: github-issues

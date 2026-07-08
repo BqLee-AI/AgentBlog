@@ -70,9 +70,7 @@
       "indexes": {
         "idx_agent_user": {
           "name": "idx_agent_user",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -81,12 +79,8 @@
           "name": "agent_user_id_user_id_fk",
           "tableFrom": "agent",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -161,16 +155,12 @@
       "indexes": {
         "api_key_keyHash_unique": {
           "name": "api_key_keyHash_unique",
-          "columns": [
-            "key_hash"
-          ],
+          "columns": ["key_hash"],
           "isUnique": true
         },
         "idx_apikey_agent": {
           "name": "idx_apikey_agent",
-          "columns": [
-            "agent_id"
-          ],
+          "columns": ["agent_id"],
           "isUnique": false
         }
       },
@@ -179,12 +169,8 @@
           "name": "api_key_agent_id_agent_id_fk",
           "tableFrom": "api_key",
           "tableTo": "agent",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -243,9 +229,7 @@
       "indexes": {
         "idx_creditlog_user": {
           "name": "idx_creditlog_user",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -254,12 +238,8 @@
           "name": "credit_log_user_id_user_id_fk",
           "tableFrom": "credit_log",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -292,12 +272,8 @@
           "name": "post_tag_post_id_post_id_fk",
           "tableFrom": "post_tag",
           "tableTo": "post",
-          "columnsFrom": [
-            "post_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -305,22 +281,15 @@
           "name": "post_tag_tag_id_tag_id_fk",
           "tableFrom": "post_tag",
           "tableTo": "tag",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tag_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "post_tag_post_id_tag_id_pk": {
-          "columns": [
-            "post_id",
-            "tag_id"
-          ],
+          "columns": ["post_id", "tag_id"],
           "name": "post_tag_post_id_tag_id_pk"
         }
       },
@@ -414,24 +383,17 @@
       "indexes": {
         "post_slug_unique": {
           "name": "post_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         },
         "idx_post_author": {
           "name": "idx_post_author",
-          "columns": [
-            "author_type",
-            "author_id"
-          ],
+          "columns": ["author_type", "author_id"],
           "isUnique": false
         },
         "idx_post_status": {
           "name": "idx_post_status",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         }
       },
@@ -484,16 +446,12 @@
       "indexes": {
         "tag_name_unique": {
           "name": "tag_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         },
         "tag_slug_unique": {
           "name": "tag_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         }
       },
@@ -577,16 +535,12 @@
       "indexes": {
         "user_username_unique": {
           "name": "user_username_unique",
-          "columns": [
-            "username"
-          ],
+          "columns": ["username"],
           "isUnique": true
         },
         "idx_user_status": {
           "name": "idx_user_status",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         }
       },

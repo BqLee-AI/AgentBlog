@@ -15,39 +15,39 @@
 
 前端是 **Vite + React SPA**，单 bundle 三域（阅读/后台/对话），仅以路由 + 守卫区分：
 
-| 域 | 路由 | 鉴权 | 对接后端 |
-| --- | --- | --- | --- |
-| 阅读端 | `/`、`/posts`、`/posts/:slug` | 无（公开已发布） | `GET /api/posts`、`GET /api/posts/:slug` |
-| 写作后台 | `/admin/*` | JWT + 角色 | `/api/*` |
-| 在线对话 | `/chat` | JWT（消耗自己 credits） | `POST /api/chat`（SSE 流式） |
+| 域       | 路由                          | 鉴权                    | 对接后端                                 |
+| -------- | ----------------------------- | ----------------------- | ---------------------------------------- |
+| 阅读端   | `/`、`/posts`、`/posts/:slug` | 无（公开已发布）        | `GET /api/posts`、`GET /api/posts/:slug` |
+| 写作后台 | `/admin/*`                    | JWT + 角色              | `/api/*`                                 |
+| 在线对话 | `/chat`                       | JWT（消耗自己 credits） | `POST /api/chat`（SSE 流式）             |
 
 ## 分层职责矩阵
 
-| 层 | 位置 | 允许做 | 禁止做 |
-| --- | --- | --- | --- |
-| 契约 | `@agentblog/shared` | 定义 payload 类型、共用 zod schema、错误码、枚举 | 业务逻辑、React 组件、fetch 调用 |
-| 请求层 | `api/*.api.ts` / `lib/request.ts` | 纯函数：method+path+body → `Promise<data>`；注入 Bearer；解包响应 | 写 React、维护业务 state、调 hook |
-| 数据 hook 层 | `features/*/use-*.ts` | 封装 useQuery/useMutation；定义 queryKey、失效、乐观更新 | 直接调 fetch；写 UI |
-| 页面层 | `pages/*.page.tsx` | 组合 hook + 组件；路由参数处理；触发导航 | 直接调 api；维护可放 hook 的 state |
-| 组件层 | `components/*`、`features/*` | 纯展示 / 受控交互；props 驱动 | 直接发请求（除非自包含组件如上传） |
-| 横切库 | `lib/*` | 纯函数工具（request/auth-store/cn/markdown） | 含业务流程 |
+| 层           | 位置                              | 允许做                                                            | 禁止做                             |
+| ------------ | --------------------------------- | ----------------------------------------------------------------- | ---------------------------------- |
+| 契约         | `@agentblog/shared`               | 定义 payload 类型、共用 zod schema、错误码、枚举                  | 业务逻辑、React 组件、fetch 调用   |
+| 请求层       | `api/*.api.ts` / `lib/request.ts` | 纯函数：method+path+body → `Promise<data>`；注入 Bearer；解包响应 | 写 React、维护业务 state、调 hook  |
+| 数据 hook 层 | `features/*/use-*.ts`             | 封装 useQuery/useMutation；定义 queryKey、失效、乐观更新          | 直接调 fetch；写 UI                |
+| 页面层       | `pages/*.page.tsx`                | 组合 hook + 组件；路由参数处理；触发导航                          | 直接调 api；维护可放 hook 的 state |
+| 组件层       | `components/*`、`features/*`      | 纯展示 / 受控交互；props 驱动                                     | 直接发请求（除非自包含组件如上传） |
+| 横切库       | `lib/*`                           | 纯函数工具（request/auth-store/cn/markdown）                      | 含业务流程                         |
 
 > 📌 依赖铁律：`pages → features(use*) → api → lib(request) → shared`，不得反向。`features/post` 可以用 `features/tag` 的 hook（跨域允许，注意循环依赖）。`pages` 之间不互相 import 实现，只通过路由跳转。
 
 ## 场景索引
 
-| 场景 | 触发信号 | 核心审查问题 |
-| --- | --- | --- |
-| 分层边界 | `pages/**`、`features/**`、`api/**` | 页面是否直接调 api；hook 是否写 UI；api 层是否含 React/state；依赖是否反向 |
-| 契约单一真相源 | 任意 `import type`、`zodResolver`、错误码分支 | 类型/schema/枚举是否从 `@agentblog/shared` 引入；是否在前端重定义了已存在的契约 |
-| 鉴权与 token | `lib/auth-store.ts`、`require-auth.tsx`、`require-role.tsx`、`Authorization` header | token 是否放 Bearer Header；存储是否用内存/sessionStorage（避免 localStorage）；401 是否清 token 跳登录；守卫是否在受保护路由前 |
-| 请求与错误处理 | `lib/request.ts`、`api/*.api.ts` | 是否注入 Bearer；是否解包 `{ok,data,error}`（ok 取 data，否则 throw）；是否按 `error.code` 而非 message 分支；402 是否提示充值 |
-| 流式对话 | `features/chat/**`、`useChat`、`/chat` | 是否用 `@ai-sdk/react` 的 `useChat`；`api` 指向 `/api/chat`；headers 带 Bearer；对话历史是否只放内存（禁止 localStorage） |
-| 路由与懒加载 | `app/router.tsx`、`pages/**` | 是否用 React Router data router；后台路由是否懒加载；守卫顺序是否正确 |
-| API Key 明文展示 | `features/api-key/**`、签发弹窗 | 明文是否仅签发时展示一次；是否有复制 + 保存提示；列表是否只显示 keyPrefix |
-| 图片上传 | `features/**` 上传组件、`api/upload.api.ts` | 是否先 `POST /api/upload` 拿 URL 再 PATCH 到资源；是否限制大小 |
-| 环境变量 | `config/env.ts`、`import.meta.env` | 是否只读 `VITE_` 前缀；是否用 zod 校验；前端是否泄露后端密钥（JWT_SECRET/OPENAI_API_KEY 绝不能出现） |
-| 测试 | `test/**`、`*.test.tsx` | 是否用 Vitest + MSW；是否 mock fetch 而非真实后端 |
+| 场景             | 触发信号                                                                            | 核心审查问题                                                                                                                    |
+| ---------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 分层边界         | `pages/**`、`features/**`、`api/**`                                                 | 页面是否直接调 api；hook 是否写 UI；api 层是否含 React/state；依赖是否反向                                                      |
+| 契约单一真相源   | 任意 `import type`、`zodResolver`、错误码分支                                       | 类型/schema/枚举是否从 `@agentblog/shared` 引入；是否在前端重定义了已存在的契约                                                 |
+| 鉴权与 token     | `lib/auth-store.ts`、`require-auth.tsx`、`require-role.tsx`、`Authorization` header | token 是否放 Bearer Header；存储是否用内存/sessionStorage（避免 localStorage）；401 是否清 token 跳登录；守卫是否在受保护路由前 |
+| 请求与错误处理   | `lib/request.ts`、`api/*.api.ts`                                                    | 是否注入 Bearer；是否解包 `{ok,data,error}`（ok 取 data，否则 throw）；是否按 `error.code` 而非 message 分支；402 是否提示充值  |
+| 流式对话         | `features/chat/**`、`useChat`、`/chat`                                              | 是否用 `@ai-sdk/react` 的 `useChat`；`api` 指向 `/api/chat`；headers 带 Bearer；对话历史是否只放内存（禁止 localStorage）       |
+| 路由与懒加载     | `app/router.tsx`、`pages/**`                                                        | 是否用 React Router data router；后台路由是否懒加载；守卫顺序是否正确                                                           |
+| API Key 明文展示 | `features/api-key/**`、签发弹窗                                                     | 明文是否仅签发时展示一次；是否有复制 + 保存提示；列表是否只显示 keyPrefix                                                       |
+| 图片上传         | `features/**` 上传组件、`api/upload.api.ts`                                         | 是否先 `POST /api/upload` 拿 URL 再 PATCH 到资源；是否限制大小                                                                  |
+| 环境变量         | `config/env.ts`、`import.meta.env`                                                  | 是否只读 `VITE_` 前缀；是否用 zod 校验；前端是否泄露后端密钥（JWT_SECRET/OPENAI_API_KEY 绝不能出现）                            |
+| 测试             | `test/**`、`*.test.tsx`                                                             | 是否用 Vitest + MSW；是否 mock fetch 而非真实后端                                                                               |
 
 ## 选择规则
 

@@ -15,8 +15,12 @@ import { sql } from 'drizzle-orm'
 
 /** 通用时间戳：整数 unix 秒存储，TS 侧 Date */
 const timestamps = {
-  createdAt: integer({ mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
-  updatedAt: integer({ mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  createdAt: integer({ mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer({ mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
 }
 
 // ---------- user 用户表 ----------
@@ -26,10 +30,14 @@ export const users = sqliteTable(
     id: integer().primaryKey({ autoIncrement: true }),
     username: text().notNull().unique(),
     passwordHash: text().notNull(),
-    role: text({ enum: ['super_admin', 'admin', 'user'] }).notNull().default('user'),
+    role: text({ enum: ['super_admin', 'admin', 'user'] })
+      .notNull()
+      .default('user'),
     credits: integer().notNull().default(0),
     avatarUrl: text(),
-    status: text({ enum: ['active', 'disabled'] }).notNull().default('active'),
+    status: text({ enum: ['active', 'disabled'] })
+      .notNull()
+      .default('active'),
     ...timestamps,
   },
   (t) => ({
@@ -49,7 +57,9 @@ export const agents = sqliteTable(
     name: text().notNull(),
     avatarUrl: text(),
     systemPrompt: text(),
-    status: text({ enum: ['active', 'disabled'] }).notNull().default('active'),
+    status: text({ enum: ['active', 'disabled'] })
+      .notNull()
+      .default('active'),
     ...timestamps,
   },
   (t) => ({
@@ -71,7 +81,9 @@ export const apiKeys = sqliteTable(
     // 前缀用于展示识别（如 sk_live_abcd），不泄露完整 key
     keyPrefix: text().notNull(),
     name: text(),
-    status: text({ enum: ['active', 'revoked'] }).notNull().default('active'),
+    status: text({ enum: ['active', 'revoked'] })
+      .notNull()
+      .default('active'),
     ...timestamps,
   },
   (t) => ({
@@ -90,7 +102,9 @@ export const posts = sqliteTable(
     summary: text(),
     content: text().notNull(),
     coverUrl: text(),
-    status: text({ enum: ['draft', 'published'] }).notNull().default('draft'),
+    status: text({ enum: ['draft', 'published'] })
+      .notNull()
+      .default('draft'),
     // 多态作者：authorType 区分，authorId 指向 user 或 agent（不加外键）
     authorType: text({ enum: ['user', 'agent'] }).notNull(),
     authorId: integer().notNull(),
@@ -140,7 +154,9 @@ export const creditLogs = sqliteTable(
     // 与 @agentblog/shared 的 CreditLogType 对齐
     type: text({ enum: ['recharge', 'mcp_call', 'agent_token'] }).notNull(),
     reason: text().notNull(),
-    createdAt: integer({ mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+    createdAt: integer({ mode: 'timestamp' })
+      .notNull()
+      .default(sql`(unixepoch())`),
   },
   (t) => ({
     // 按用户取流水（外键不自动建索引）

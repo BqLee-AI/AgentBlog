@@ -10,7 +10,6 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "format": "prettier --write src",
-
     "db:generate": "drizzle-kit generate",
     "db:migrate": "bun run src/db/migrate.ts",
     "db:studio": "drizzle-kit studio",

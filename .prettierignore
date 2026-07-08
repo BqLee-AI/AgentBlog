@@ -1,0 +1,17 @@
+# AI skills 定义（格式化会破坏 frontmatter/列表语义）
+.agents/
+
+# Drizzle 迁移元数据（字段顺序敏感，不能重排）
+**/drizzle/meta/
+
+# 锁文件
+bun.lock
+package-lock.json
+
+# 依赖与产物
+node_modules/
+dist/
+build/
+
+# 运行时数据
+data/

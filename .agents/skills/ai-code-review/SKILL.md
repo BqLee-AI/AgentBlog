@@ -3,7 +3,7 @@ name: ai-code-review
 description: 用于对本仓库 PR、commit、diff 或代码变更做 AI Code Review；当用户要求 review PR、review commit、review diff、代码审查、CR 规范检查、AI CR 或检查变更是否符合 AgentBlog 分层与模块边界时使用。
 license: Proprietary
 compatibility:
-  agent: "*"
+  agent: '*'
 metadata:
   language: zh-CN
   scope: ai-code-review

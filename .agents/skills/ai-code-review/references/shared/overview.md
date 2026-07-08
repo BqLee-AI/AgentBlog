@@ -10,12 +10,12 @@
 
 ## 职责边界
 
-| 该放 `@agentblog/shared` | 不该放 |
-| --- | --- |
-| API 响应 payload 的 TS 类型（`Post`、`User`、`Agent`、`ApiKey`、`CreditLog`、`Paginated<T>`） | 后端内部实现（repository 返回的原始行） |
-| 前后端共用的 Zod schema（如 `createPostSchema`、`loginSchema`） | 仅后端用的 DB 层 schema（Drizzle table 定义留在 `apps/api`） |
-| 错误码枚举、统一响应结构常量 | 业务逻辑、数据库访问、Hono 中间件 |
-| 角色/状态等枚举（`Role`、`PostStatus`、`CreditType`） | React 组件、AI/MCP 工具实现 |
+| 该放 `@agentblog/shared`                                                                      | 不该放                                                       |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| API 响应 payload 的 TS 类型（`Post`、`User`、`Agent`、`ApiKey`、`CreditLog`、`Paginated<T>`） | 后端内部实现（repository 返回的原始行）                      |
+| 前后端共用的 Zod schema（如 `createPostSchema`、`loginSchema`）                               | 仅后端用的 DB 层 schema（Drizzle table 定义留在 `apps/api`） |
+| 错误码枚举、统一响应结构常量                                                                  | 业务逻辑、数据库访问、Hono 中间件                            |
+| 角色/状态等枚举（`Role`、`PostStatus`、`CreditType`）                                         | React 组件、AI/MCP 工具实现                                  |
 
 ## 依赖关系
 
@@ -28,13 +28,13 @@ apps/web ──depends on──▶ @agentblog/shared ◀──depends on── a
 
 ## 场景索引
 
-| 场景 | 触发信号 | 核心审查问题 |
-| --- | --- | --- |
-| 类型漂移 | 新增/修改 payload 类型、enum、常量 | 后端 Drizzle schema 与前端是否都从 shared 引入；是否有人在前端重定义了已存在的类型 |
-| Schema 分工 | 新增 Zod schema | 跨前后端复用的放 shared，仅后端内部用的留模块内；同一份 schema 只定义一次 |
-| 错误码同步 | `codes.ts` 改动 | 后端 `lib/errors.ts` 的 `HttpError` 静态工厂与 shared 错误码是否对齐；402 `INSUFFICIENT_CREDITS` 等强约束码是否齐全 |
-| 破坏性变更 | 删除/重命名字段、改 enum 值 | 是否同时影响前后端；是否需要在 PR 说明里标注契约变更 |
-| 循环依赖 | shared 引入 apps/api 或 apps/web | shared 必须零 workspace 依赖；出现即红线 |
+| 场景        | 触发信号                           | 核心审查问题                                                                                                        |
+| ----------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| 类型漂移    | 新增/修改 payload 类型、enum、常量 | 后端 Drizzle schema 与前端是否都从 shared 引入；是否有人在前端重定义了已存在的类型                                  |
+| Schema 分工 | 新增 Zod schema                    | 跨前后端复用的放 shared，仅后端内部用的留模块内；同一份 schema 只定义一次                                           |
+| 错误码同步  | `codes.ts` 改动                    | 后端 `lib/errors.ts` 的 `HttpError` 静态工厂与 shared 错误码是否对齐；402 `INSUFFICIENT_CREDITS` 等强约束码是否齐全 |
+| 破坏性变更  | 删除/重命名字段、改 enum 值        | 是否同时影响前后端；是否需要在 PR 说明里标注契约变更                                                                |
+| 循环依赖    | shared 引入 apps/api 或 apps/web   | shared 必须零 workspace 依赖；出现即红线                                                                            |
 
 ## 初始 finding 倾向
 

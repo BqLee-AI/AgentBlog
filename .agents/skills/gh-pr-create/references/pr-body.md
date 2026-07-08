@@ -34,13 +34,16 @@
 ## 改动
 
 ### 后端 (apps/api)
+
 - `modules/credit/credit.service.ts`：`tryDeduct` 改用条件 UPDATE + 事务，防超扣（对齐 08）
 - `routes/credits.routes.ts`：充值限 admin+，`/me/logs` 仅自己
 
 ### MCP (apps/api/src/mcp)
+
 - 工具注册复用 `ai/tools.ts`，按次计费包进 withBilling（对齐 09）
 
 ### 验证
+
 - `cd apps/api && bun test tests/credit` → 并发 100 次扣减余额 50，成功 50 次 ✅
 - MCP Inspector 联调：tools/list 5 个工具，list_post 扣 1 credit ✅
 ```
@@ -57,6 +60,7 @@
 
 ```markdown
 ## Review Notes
+
 - `streamText` 的 `onFinish` 用法依据 Vercel AI SDK v5，`toUIMessageStreamResponse()` 是 v5 API；若 reviewer 看到 `toDataStreamResponse()` 那是 v3/v4 旧 API。
 - 在线对话刻意不落库（需求 §1.2/§5 强约束），不要建议加 message 表。
 - MCP 不单独成 app（单进程共享工具定义，见 02 §1.1），不要建议拆 packages/tools。

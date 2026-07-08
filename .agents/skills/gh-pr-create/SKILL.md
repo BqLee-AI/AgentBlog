@@ -3,7 +3,7 @@ name: gh-pr-create
 description: 用于为本仓库准备、撰写和创建 GitHub PR；当实现已完成，或设计文档/契约改动需要单独提 PR 审核时使用，负责从 issue 形成有证据链的 PR 说明、提交证据、选择验证结果并推送分支。
 license: Proprietary
 compatibility:
-  agent: "*"
+  agent: '*'
 metadata:
   language: zh-CN
   scope: github-pr-create
