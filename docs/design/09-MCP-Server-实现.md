@@ -27,6 +27,23 @@ Hono app
          └─ tools: list_posts / get_post / create_post / update_post / delete_post
 ```
 
+### 1.1 鉴权体系：API Key 与 JWT 完全分离
+
+> 📌 **决策**：本系统有**两套独立鉴权体系**，互不通用，按"调用者是谁"分流。
+
+| 体系 | 服务对象 | 载体 | 生命周期 | 存储 | 计费 |
+|------|---------|------|----------|------|------|
+| **JWT**（见 [04](./04-用户认证与会话.md)） | 人（Web 后台、阅读页管理） | `Authorization: Bearer` | 短期（7d 过期重登） | 不存储（签发即发） | 不计费 |
+| **API Key**（本篇） | Agent（MCP 客户端、外部工具） | `X-API-Key` Header | 长期有效、可吊销 | **不可逆存储**（hash，见 [03](./03-数据库设计与-Drizzle-建模.md) §三 api_key 表） | 按次计费 |
+
+**为什么分离**：
+- 服务对象不同——人需要"登录态 + 角色"，Agent 需要"稳定凭证 + 可吊销"
+- 生命周期不同——JWT 短期过期，API Key 长期有效直到主动吊销
+- 需求 §4.4/§4.6 也是分开定义的：API Key 绑定 Agent、不可逆存储；JWT 用于用户会话
+- MCP 客户端（如 Claude Desktop）无法管理短期 JWT 的刷新，必须用长期 API Key
+
+> ⚠️ `apiKeyMiddleware` 与 `authMiddleware`（JWT）**互不干涉**：`/mcp/*` 只走 API Key 中间件，`/api/*` 走 JWT 中间件。不要在 MCP 路由上叠加 JWT 校验。
+
 ## 二、安装与依赖
 
 ```bash
