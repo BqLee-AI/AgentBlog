@@ -2,21 +2,22 @@
  * 全局 Provider 组装。
  *
  * 挂载：
- *   - QueryClientProvider（TanStack Query）
+ *   - ErrorBoundary（最外层，渲染崩溃兜底）
+ *   - QueryClientProvider（TanStack Query，含全局 mutation onError 兜底）
  *   - AuthProvider（启动校验 token）
+ *   - Toaster（sonner，全局 toast）
  *   - 401 handler 注册（request 触发 → router.navigate /login，带 from state）
- *   - 402 事件监听（console 占位，#7 接 sonner toast）
+ *   - 402 事件监听 → toast「额度不足，请联系管理员充值」
  *   - Suspense（路由懒加载 chunk 期显示 PageSkeleton）
- *
- * 后续叠加（不在本期）：
- *   - #7 ErrorBoundary（最外层）/ Toaster
  */
 import { Suspense, lazy, type ReactNode, useEffect } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
+import { Toaster, toast } from 'sonner'
 import { queryClient } from '@/lib/query-client'
 import { setUnauthorizedHandler, INSUFFICIENT_CREDITS_EVENT } from '@/lib/request'
 import { AuthProvider } from '@/features/auth/use-auth'
 import { router } from '@/app/router'
+import { ErrorBoundary } from '@/app/error-boundary'
 import { PageSkeleton } from '@/components/feedback/page-skeleton'
 
 // 动态 import DevTools，确保生产 build 不打入 devtools 代码（静态 import 即使被
@@ -37,26 +38,27 @@ export function RootProviders({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  // 402 事件：#7 接 sonner toast 后改为 toast.error('额度不足，请联系管理员充值')
+  // 402 事件：request 层（纯逻辑层）派发，UI 层监听后弹含充值引导的 toast。
+  // 解耦见 docs/design/frontend/08 §4.3——request 不直接 import toast。
   useEffect(() => {
-    const handler = () => {
-      // TODO(#7)：替换为 sonner toast
-      console.warn('[额度不足] 请联系管理员充值')
-    }
+    const handler = () => toast.error('额度不足，请联系管理员充值')
     window.addEventListener(INSUFFICIENT_CREDITS_EVENT, handler)
     return () => window.removeEventListener(INSUFFICIENT_CREDITS_EVENT, handler)
   }, [])
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
-        {import.meta.env.DEV && (
-          <Suspense fallback={null}>
-            <ReactQueryDevtools initialIsOpen={false} />
-          </Suspense>
-        )}
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
+          {import.meta.env.DEV && (
+            <Suspense fallback={null}>
+              <ReactQueryDevtools initialIsOpen={false} />
+            </Suspense>
+          )}
+        </AuthProvider>
+      </QueryClientProvider>
+      <Toaster position="top-center" richColors closeButton />
+    </ErrorBoundary>
   )
 }
