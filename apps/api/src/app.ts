@@ -9,6 +9,7 @@
  */
 import { Hono } from 'hono'
 import { logger } from 'hono/logger'
+import { serveStatic } from 'hono/bun'
 import { ok } from '@/lib/response'
 import { errorHandler } from '@/middlewares/error-handler'
 import { api } from '@/routes'
@@ -28,6 +29,17 @@ app.notFound((c) => c.json({ ok: false, error: { code: ErrorCode.NOT_FOUND, mess
 
 // ── 健康检查 ──
 app.get('/health', (c) => ok(c, { status: 'running' }))
+
+// ── 静态文件托管：/uploads/* → ./data/uploads/（公开，不挂 authMiddleware）──
+// 封面/头像本就公开（详见 11 §四/§九）。URL /uploads/<dir>/<file> 映射到 UPLOAD_DIR=./data/uploads。
+// root 用 './'，rewriteRequestPath 把 /uploads/ 前缀重写为 /data/uploads/ 对齐 env.UPLOAD_DIR。
+app.use(
+  '/uploads/*',
+  serveStatic({
+    root: './',
+    rewriteRequestPath: (p) => p.replace(/^\/uploads\//, '/data/uploads/'),
+  }),
+)
 
 // ── 业务路由 ──
 app.route('/api', api)
