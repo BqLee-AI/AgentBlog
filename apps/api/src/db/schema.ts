@@ -10,7 +10,7 @@
  *
  * 详见 docs/design/03。
  */
-import { sqliteTable, text, integer, index, primaryKey } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, index, primaryKey, unique } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
 /** 通用时间戳：整数 unix 秒存储，TS 侧 Date */
@@ -63,7 +63,8 @@ export const agents = sqliteTable(
     ...timestamps,
   },
   (t) => ({
-    // 每用户 ≤1 Agent：按 userId 查存在性
+    // 每用户 ≤1 Agent：DB UNIQUE 约束兜底（防并发双写）+ service 层查存在性双保险
+    userUnique: unique('uq_agent_user').on(t.userId),
     userIdx: index('idx_agent_user').on(t.userId),
   }),
 )

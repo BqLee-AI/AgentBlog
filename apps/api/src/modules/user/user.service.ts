@@ -64,6 +64,9 @@ export const userService = {
     }
 
     const updated = await userRepository.updateRole(targetId, newRole)
+    if (!updated) {
+      throw HttpError.notFound('用户不存在')
+    }
     return toUserDTO(updated)
   },
 
@@ -83,6 +86,9 @@ export const userService = {
     }
 
     const updated = await userRepository.updateStatus(targetId, status)
+    if (!updated) {
+      throw HttpError.notFound('用户不存在')
+    }
     return toUserDTO(updated)
   },
 }
