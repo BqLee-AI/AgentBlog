@@ -11,6 +11,7 @@
  *   api.route('/posts', postsRoutes)      ← #18 接入
  *   api.route('/tags', tagsRoutes)        ← #18 接入
  *   api.route('/upload', uploadRoutes)    ← #23 接入
+ *   api.route('/chat', chatRoutes)        ← #22 接入
  *   ...
  */
 import { Hono } from 'hono'
@@ -22,6 +23,7 @@ import { creditsRoutes } from './credits.routes'
 import { postsRoutes } from './posts.routes'
 import { tagsRoutes } from './tags.routes'
 import { uploadRoutes } from './upload.routes'
+import { chatRoutes } from './chat.routes'
 
 export const api = new Hono()
 
@@ -33,3 +35,4 @@ api.route('/credits', creditsRoutes)
 api.route('/posts', postsRoutes)
 api.route('/tags', tagsRoutes)
 api.route('/upload', uploadRoutes)
+api.route('/chat', chatRoutes)

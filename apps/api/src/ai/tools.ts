@@ -8,13 +8,15 @@
  *   - 工具不读 Hono Context；上下文由调用方（MCP handler / chat 路由）组装成 ToolContext 传入。
  *   - create_post 作者归属为 ctx.agentId（🔴 authorType='agent'）；update/delete 自做 agent 归属校验
  *     （postService.update/remove 的 isOwner 只认 user 作者，agent 会被 403，故 tools 层直连 repository）。
- *   - inputSchema 用 zod raw shape（schema.shape），对齐 MCP SDK registerTool 的 inputSchema 参数；
- *     handler 参数类型用 z.infer 从同一 schema 推导，保证类型同源（exactOptionalPropertyTypes 兼容）。
+ *   - 双 schema 形态：MCP 的 registerTool 要 zod raw shape（schema.shape），AI SDK 的 tool()
+ *     要整个 ZodObject（schema 本体）。故每个工具同时导出 shape（MCP 用）和 schema（AI SDK 用），
+ *     二者派生自同一 ZodObject，单一真相源。
  *   - 🔴 slug 不可变：update_post 的 inputSchema 无 slug 字段（源头拒绝），handler 也不构造外部 slug。
  *
- * 计费不在本文件做——由 mcp/server.ts 的 wrapTool 包装器在工具成功后扣费。
+ * 计费不在本文件做——MCP 由 mcp/server.ts 的 wrapTool 包装器；在线 Agent 由 runtime 的 onFinish。
  */
 import { z } from 'zod'
+import { tool as aiTool } from 'ai'
 import { db } from '@/db/client'
 import { posts } from '@/db/schema'
 import { HttpError } from '@/lib/errors'
@@ -73,14 +75,17 @@ const deletePostSchema = z.object({
 })
 
 /**
- * 5 个文章工具。工厂接收 ctx，返回 { description, shape, handler }。
- * handler 抛 HttpError 表示业务失败（由 server.ts 的 wrapTool 转 isError，且不计费）。
+ * 5 个文章工具。工厂接收 ctx，返回 { description, shape, schema, handler }。
+ * - shape（raw shape）：MCP registerTool 用
+ * - schema（ZodObject 本体）：AI SDK tool() 用（toAiSdkTools）
+ * handler 抛 HttpError 表示业务失败（MCP 由 wrapTool 转 isError 且不计费；在线 Agent 由 LLM 调用）。
  */
 export function postTools(ctx: ToolContext) {
   return {
     list_posts: {
       description: '按标签列出已发布文章（草稿不对外暴露）。',
       shape: listPostsSchema.shape,
+      schema: listPostsSchema,
       handler: async (args: z.infer<typeof listPostsSchema>): Promise<{ items: PostWithTags[]; total: number }> => {
         // 🔴 MCP list_posts 永远只返回 published（强制 isPublicView=true），
         //    不暴露 status 过滤——否则 agent 能经 status=draft 窥探全库他人草稿（信息泄露）。
@@ -103,6 +108,7 @@ export function postTools(ctx: ToolContext) {
     get_post: {
       description: '按 slug 或 id 读取文章详情（至少传一个）。仅返回已发布文章。',
       shape: getPostSchema.shape,
+      schema: getPostSchema,
       handler: async (args: z.infer<typeof getPostSchema>): Promise<PostWithTags> => {
         if (args.slug) {
           // 复用 postService.getBySlug（内部强制 published，草稿/不存在 → 404）
@@ -124,6 +130,7 @@ export function postTools(ctx: ToolContext) {
     create_post: {
       description: '创建文章。作者自动归属为当前 Agent（authorType=agent）。',
       shape: createPostSchema.shape,
+      schema: createPostSchema,
       handler: async (args: z.infer<typeof createPostSchema>): Promise<PostRow> => {
         // 🔴 作者归属为该 Agent；published 时 postService 内部生成 slug（一次性，永久不可变）
         return postService.create(
@@ -145,6 +152,7 @@ export function postTools(ctx: ToolContext) {
       description:
         '更新文章内容/状态（slug 不可改）。仅允许更新当前 Agent 自己的文章（authorType=agent 且 authorId 匹配）。',
       shape: updatePostSchema.shape,
+      schema: updatePostSchema,
       handler: async (args: z.infer<typeof updatePostSchema>): Promise<PostWithTags> => {
         const post = await postRepository.findById(args.id)
         if (!post) throw HttpError.notFound('文章不存在')
@@ -176,6 +184,7 @@ export function postTools(ctx: ToolContext) {
     delete_post: {
       description: '删除文章。仅允许删除当前 Agent 自己的文章。',
       shape: deletePostSchema.shape,
+      schema: deletePostSchema,
       handler: async (args: z.infer<typeof deletePostSchema>): Promise<{ deleted: true }> => {
         const post = await postRepository.findById(args.id)
         if (!post) throw HttpError.notFound('文章不存在')
@@ -189,5 +198,43 @@ export function postTools(ctx: ToolContext) {
         return { deleted: true }
       },
     },
+  }
+}
+
+/**
+ * 把 postTools(defs) 转成 AI SDK v4 的 tool 定义（供在线 Agent streamText 用，详见 docs/design/10 §4.1）。
+ *
+ * AI SDK 的 tool() 接受整个 ZodObject（parameters: ZodTypeAny），不是 raw shape——
+ * 与 MCP registerTool（要 raw shape）不同，故用每个工具的 schema（ZodObject 本体）。
+ *
+ * 🔴 与 MCP 复用同一份 postTools 工具定义（需求 §4.6）；本函数只做格式转换，不含业务逻辑。
+ */
+export function toAiSdkTools(defs: ReturnType<typeof postTools>) {
+  return {
+    list_posts: aiTool({
+      description: defs.list_posts.description,
+      parameters: defs.list_posts.schema,
+      execute: defs.list_posts.handler,
+    }),
+    get_post: aiTool({
+      description: defs.get_post.description,
+      parameters: defs.get_post.schema,
+      execute: defs.get_post.handler,
+    }),
+    create_post: aiTool({
+      description: defs.create_post.description,
+      parameters: defs.create_post.schema,
+      execute: defs.create_post.handler,
+    }),
+    update_post: aiTool({
+      description: defs.update_post.description,
+      parameters: defs.update_post.schema,
+      execute: defs.update_post.handler,
+    }),
+    delete_post: aiTool({
+      description: defs.delete_post.description,
+      parameters: defs.delete_post.schema,
+      execute: defs.delete_post.handler,
+    }),
   }
 }
