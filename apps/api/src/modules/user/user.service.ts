@@ -8,7 +8,7 @@
  *   - 路由层 requireRole（粗粒度角色挡）
  *   - service 层再校验（提权边界 + 自我保护，防路由配置错或内部调用绕过）
  */
-import type { Role, UserStatus, UserDTO, PaginatedDTO } from '@agentblog/shared'
+import type { Role, UserStatus, UserDTO, PaginatedDTO, Actor } from '@agentblog/shared'
 import type { PaginationDTO } from '@agentblog/shared'
 import { HttpError } from '@/lib/errors'
 import { userRepository, type UserRow } from './user.repository'
@@ -23,12 +23,6 @@ function toUserDTO(user: UserRow): UserDTO {
     avatarUrl: user.avatarUrl,
     status: user.status,
   }
-}
-
-/** actor 形状（后续所有 service 的资源归属校验复用） */
-export interface Actor {
-  id: number
-  role: Role
 }
 
 export const userService = {

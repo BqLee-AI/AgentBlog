@@ -14,8 +14,7 @@ import { db } from '@/db/client'
 import { apiKeys, agents, users } from '@/db/schema'
 import { HttpError } from '@/lib/errors'
 import { generateApiKey, hashApiKey, keyPrefix } from '@/lib/crypto'
-import type { ApiKeyDTO, ApiKeyStatus } from '@agentblog/shared'
-import type { Actor } from '@/modules/agent/agent.service'
+import type { ApiKeyDTO, ApiKeyStatus, Actor } from '@agentblog/shared'
 
 /** 签发响应（🔴 明文 key 仅此返回一次） */
 export interface IssueResult {

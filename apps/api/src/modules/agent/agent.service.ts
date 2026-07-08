@@ -6,7 +6,7 @@
  *
  * 每用户 ≤1 双保险：service findByUserId 查存在性 + DB UNIQUE(user_id) 约束。
  */
-import type { Role, AgentDTO } from '@agentblog/shared'
+import type { AgentDTO, Actor } from '@agentblog/shared'
 import { HttpError } from '@/lib/errors'
 import { agentRepository, type AgentRow } from './agent.repository'
 import type { CreateAgentDTO, UpdateAgentDTO } from './agent.schema'
@@ -23,11 +23,7 @@ function toAgentDTO(agent: AgentRow): AgentDTO {
   }
 }
 
-/** actor 形状（与 #17 userService.Actor 一致，资源归属校验用） */
-export interface Actor {
-  id: number
-  role: Role
-}
+/** actor 形状从 @agentblog/shared 引入（review should-fix-2 统一真相源） */
 
 export const agentService = {
   /** 获取我的 Agent（0 或 1 个） */
