@@ -8,7 +8,8 @@
  *   api.route('/agents', agentsRoutes)    ← #19 接入
  *   api.route('/api-keys', apiKeysRoutes) ← #19 接入
  *   api.route('/credits', creditsRoutes)  ← #20 接入
- *   api.route('/posts', posts)   // TODO 任务 7
+ *   api.route('/posts', postsRoutes)      ← #18 接入
+ *   api.route('/tags', tagsRoutes)        ← #18 接入
  *   ...
  */
 import { Hono } from 'hono'
@@ -17,6 +18,8 @@ import { usersRoutes } from './users.routes'
 import { agentsRoutes } from './agents.routes'
 import { apiKeysRoutes } from './api-keys.routes'
 import { creditsRoutes } from './credits.routes'
+import { postsRoutes } from './posts.routes'
+import { tagsRoutes } from './tags.routes'
 
 export const api = new Hono()
 
@@ -25,3 +28,5 @@ api.route('/users', usersRoutes)
 api.route('/agents', agentsRoutes)
 api.route('/api-keys', apiKeysRoutes)
 api.route('/credits', creditsRoutes)
+api.route('/posts', postsRoutes)
+api.route('/tags', tagsRoutes)
