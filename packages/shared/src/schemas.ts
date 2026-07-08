@@ -22,3 +22,13 @@ export const roleSchema = z.enum([Role.SUPER_ADMIN, Role.ADMIN, Role.USER])
 
 /** 文章状态枚举校验 */
 export const postStatusSchema = z.enum([PostStatus.DRAFT, PostStatus.PUBLISHED])
+
+/**
+ * 登录请求（前后端共用，规则与后端 04 §五 一致）。
+ * 前端表单（RHF + zodResolver）与后端 @hono/zod-validator 消费同一份。
+ */
+export const loginSchema = z.object({
+  username: z.string().min(3, { error: '用户名至少 3 位' }).max(32, { error: '用户名最多 32 位' }),
+  password: z.string().min(6, { error: '密码至少 6 位' }),
+})
+export type LoginDTO = z.infer<typeof loginSchema>
