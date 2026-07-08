@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import shlex
 import subprocess
 import sys
 
@@ -55,7 +56,7 @@ def sync_labels(repo: str, dry_run: bool) -> None:
             "--force",
         ]
         if dry_run:
-            print(" ".join(cmd))
+            print(shlex.join(cmd))
             continue
 
         result = subprocess.run(cmd, capture_output=True, text=True, check=False)

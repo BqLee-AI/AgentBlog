@@ -1,6 +1,6 @@
 # Label 策略
 
-本仓库当前没有 `.github/labels.yml` 真相源。使用 `scripts/sync_repo_labels.py` 内置的标准标签集同步远端。
+本仓库当前没有 `.github/labels.yml` 真相源。使用 `.agents/skills/gh-issue-create/scripts/sync_repo_labels.py` 内置的标准标签集同步远端。
 
 ## 最小标签集合
 
