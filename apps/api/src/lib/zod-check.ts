@@ -9,6 +9,7 @@ import { zValidator } from '@hono/zod-validator'
 import type { ZodSchema } from 'zod'
 import type { ValidationTargets } from 'hono'
 import { ErrorCode } from '@agentblog/shared'
+import { zodIssuesToFields } from '@/lib/zod-errors'
 
 /**
  * 用法同 zValidator，但校验失败时返回统一错误格式 { ok:false, error:{ code, message, fields } }。
@@ -20,19 +21,13 @@ export function zodCheck<T extends ZodSchema, Target extends keyof ValidationTar
 ) {
   return zValidator(target, schema, (result, c) => {
     if (!result.success) {
-      // 把 issues 按 path 拍平成 { field: [messages] }，顶层错误归到 `_`
-      const fields: Record<string, string[]> = {}
-      for (const issue of result.error.issues) {
-        const key = issue.path.length > 0 ? issue.path.join('.') : '_'
-        ;(fields[key] ??= []).push(issue.message)
-      }
       return c.json(
         {
           ok: false,
           error: {
             code: ErrorCode.VALIDATION_ERROR,
             message: '请求参数校验失败',
-            fields,
+            fields: zodIssuesToFields(result.error),
           },
         },
         400,

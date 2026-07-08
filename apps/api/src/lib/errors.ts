@@ -13,7 +13,7 @@ export class HttpError extends Error {
     readonly status: number,
     readonly code: string,
     message: string,
-    readonly details?: Record<string, unknown>,
+    readonly details?: Record<string, string[]>,
   ) {
     super(message)
     this.name = 'HttpError'
@@ -22,7 +22,7 @@ export class HttpError extends Error {
   // ── 静态工厂（默认消息对齐 docs/design/12 §三 错误码表）──
 
   /** 400 BAD_REQUEST —— 请求参数错误 */
-  static badRequest(message = '请求参数错误', details?: Record<string, unknown>): HttpError {
+  static badRequest(message = '请求参数错误', details?: Record<string, string[]>): HttpError {
     return new HttpError(400, ErrorCode.BAD_REQUEST, message, details)
   }
 

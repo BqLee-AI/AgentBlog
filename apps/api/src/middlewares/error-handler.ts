@@ -16,23 +16,18 @@ import { ZodError } from 'zod'
 import { env } from '@/config/env'
 import { ErrorCode } from '@agentblog/shared'
 import { HttpError } from '@/lib/errors'
+import { zodIssuesToFields } from '@/lib/zod-errors'
 
 export const errorHandler: ErrorHandler = (err, c) => {
   // 1. Zod 校验错误（service 层手动 parse 抛出时）→ 400 VALIDATION_ERROR
   if (err instanceof ZodError) {
-    // 把 issues 按 path 拍平成 { field: [messages] }，顶层错误归到 `_`
-    const fields: Record<string, string[]> = {}
-    for (const issue of err.issues) {
-      const key = issue.path.length > 0 ? issue.path.join('.') : '_'
-      ;(fields[key] ??= []).push(issue.message)
-    }
     return c.json(
       {
         ok: false,
         error: {
           code: ErrorCode.VALIDATION_ERROR,
           message: '请求参数校验失败',
-          fields,
+          fields: zodIssuesToFields(err),
         },
       },
       400,
@@ -45,7 +40,7 @@ export const errorHandler: ErrorHandler = (err, c) => {
       ok: false,
       error: { code: err.code, message: err.message },
     }
-    if (err.details) body.error.fields = err.details as Record<string, string[]>
+    if (err.details) body.error.fields = err.details
     return c.json(body, err.status as ContentfulStatusCode)
   }
 
