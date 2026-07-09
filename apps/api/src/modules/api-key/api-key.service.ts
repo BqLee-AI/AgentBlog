@@ -127,7 +127,7 @@ export const apiKeyService = {
 
   /**
    * MCP 鉴权用：按明文 key 查有效 Key 及其归属用户（供 apiKeyMiddleware 复用）。
-   * 任一环节缺失或 status 非-active → 返回 null（中间件统一抛 401）。
+   * 任一环节缺失或 key/user/agent 任一状态非-active → 返回 null（中间件统一抛 401）。
    */
   async validate(plainKey: string): Promise<ValidateResult | null> {
     const hash = hashApiKey(plainKey)
@@ -135,10 +135,10 @@ export const apiKeyService = {
     if (!key || key.status !== 'active') return null
 
     const [agent] = await db.select().from(agents).where(eq(agents.id, key.agentId)).limit(1)
-    if (!agent) return null
+    if (!agent || agent.status !== 'active') return null
 
     const [user] = await db.select().from(users).where(eq(users.id, agent.userId)).limit(1)
-    if (!user) return null
+    if (!user || user.status !== 'active') return null
 
     return {
       user: { id: user.id, username: user.username, credits: user.credits },

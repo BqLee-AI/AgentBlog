@@ -5,7 +5,10 @@
  * 生产环境在服务启动时自动调用（见 docs/design/14 §2.2）。
  */
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator'
+import { fileURLToPath } from 'node:url'
 import { db } from './client'
 
-migrate(db, { migrationsFolder: './drizzle' })
+const migrationsFolder = fileURLToPath(new URL('../../drizzle', import.meta.url))
+
+migrate(db, { migrationsFolder })
 console.log('✅ 数据库迁移完成')

@@ -11,27 +11,28 @@ import { eq, sql } from 'drizzle-orm'
 import { db } from '@/db/client'
 import { users } from '@/db/schema'
 import { creditService } from '@/modules/credit/credit.service'
+import { ensureTestDbReady } from './helpers/db'
 
 /** 测试用独立用户（测前注册，避免依赖 seed） */
-const TEST_USER = { username: 'credit_test_user', password: 'pass1234' }
+const TEST_USER = {
+  username: `credit_test_user_${Date.now().toString(36)}`,
+  password: 'pass1234',
+}
 let testUserId: number
 
 beforeAll(async () => {
-  // 注册测试用户（如果已存在则复用）
+  await ensureTestDbReady()
+
+  // 注册测试用户（用唯一用户名，避免受历史数据污染）
   const { hashPassword } = await import('@/lib/hash')
-  const [existing] = await db.select().from(users).where(eq(users.username, TEST_USER.username)).limit(1)
-  if (existing) {
-    testUserId = existing.id
-  } else {
-    const [created] = await db
-      .insert(users)
-      .values({
-        username: TEST_USER.username,
-        passwordHash: await hashPassword(TEST_USER.password),
-      })
-      .returning()
-    testUserId = created!.id
-  }
+  const [created] = await db
+    .insert(users)
+    .values({
+      username: TEST_USER.username,
+      passwordHash: await hashPassword(TEST_USER.password),
+    })
+    .returning()
+  testUserId = created!.id
 })
 
 describe('credits 并发安全', () => {

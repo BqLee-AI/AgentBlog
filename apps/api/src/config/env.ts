@@ -9,20 +9,28 @@
  */
 import { z } from 'zod'
 
+const isTest = process.env.NODE_ENV === 'test'
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
 
   // 数据库
-  DATABASE_URL: z.string().default('./data/app.db'),
+  DATABASE_URL: z.string().default(isTest ? './data/test.db' : './data/app.db'),
 
   // JWT
-  JWT_SECRET: z.string().min(32, { error: 'JWT_SECRET 至少 32 字符' }),
+  JWT_SECRET: isTest
+    ? z.string().min(32).default('test-jwt-secret-1234567890abcdef')
+    : z.string().min(32, { error: 'JWT_SECRET 至少 32 字符' }),
   JWT_EXPIRES_IN: z.string().default('7d'),
 
   // 超管（首次 seed）
-  SUPER_ADMIN_USERNAME: z.string().min(3),
-  SUPER_ADMIN_PASSWORD: z.string().min(6),
+  SUPER_ADMIN_USERNAME: isTest
+    ? z.string().min(3).default('test_admin')
+    : z.string().min(3),
+  SUPER_ADMIN_PASSWORD: isTest
+    ? z.string().min(6).default('test_admin_password')
+    : z.string().min(6),
 
   // Credits 计费
   CREDITS_PER_MCP_CALL: z.coerce.number().int().positive().default(1),

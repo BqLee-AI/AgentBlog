@@ -47,6 +47,28 @@ export type PostTagRow = {
   slug: string
 }
 
+function buildListWhere(query: {
+  status?: ListPostsQuery['status']
+  authorType?: ListPostsQuery['authorType']
+  authorId?: ListPostsQuery['authorId']
+  tag?: ListPostsQuery['tag']
+}) {
+  const conditions = [
+    query.status ? eq(posts.status, query.status) : undefined,
+    query.authorType ? eq(posts.authorType, query.authorType) : undefined,
+    query.authorId ? eq(posts.authorId, query.authorId) : undefined,
+    query.tag
+      ? sql`${posts.id} IN (
+          SELECT pt.post_id FROM ${postTags} pt
+          JOIN ${tags} t ON t.id = pt.tag_id
+          WHERE t.slug = ${query.tag}
+        )`
+      : undefined,
+  ]
+
+  return and(...conditions)
+}
+
 export const postRepository = {
   /** 按 id 查单条（后台编辑用，含草稿） */
   async findById(id: number): Promise<PostRow | null> {
@@ -65,24 +87,30 @@ export const postRepository = {
    * 条件拼装：status / authorType / authorId / tag（tag 用 post_tag JOIN tag 子查询）。
    */
   async list(query: ListPostsQuery): Promise<{ items: PostRow[]; total: number }> {
-    const conditions = [
-      query.status ? eq(posts.status, query.status) : undefined,
-      query.authorType ? eq(posts.authorType, query.authorType) : undefined,
-      query.authorId ? eq(posts.authorId, query.authorId) : undefined,
-      // tag slug 过滤：post.id 必须在「关联了该 slug 标签」的集合内
-      query.tag
-        ? sql`${posts.id} IN (
-            SELECT pt.post_id FROM ${postTags} pt
-            JOIN ${tags} t ON t.id = pt.tag_id
-            WHERE t.slug = ${query.tag}
-          )`
-        : undefined,
-    ]
-    const where = and(...conditions) // undefined 元素被自动忽略
+    const where = buildListWhere(query)
 
     const offset = (query.page - 1) * query.pageSize
     const [items, countResult] = await Promise.all([
       db.select(postColumns).from(posts).where(where).orderBy(desc(posts.createdAt)).limit(query.pageSize).offset(offset),
+      db.select({ count: sql<number>`count(*)` }).from(posts).where(where),
+    ])
+
+    return { items, total: countResult[0]?.count ?? 0 }
+  },
+
+  /** 真 offset/limit 语义的窗口列表（供 MCP / AI 工具用）。 */
+  async listWindow(query: {
+    offset: number
+    limit: number
+    status?: ListPostsQuery['status']
+    authorType?: ListPostsQuery['authorType']
+    authorId?: ListPostsQuery['authorId']
+    tag?: ListPostsQuery['tag']
+  }): Promise<{ items: PostRow[]; total: number }> {
+    const where = buildListWhere(query)
+
+    const [items, countResult] = await Promise.all([
+      db.select(postColumns).from(posts).where(where).orderBy(desc(posts.createdAt)).limit(query.limit).offset(query.offset),
       db.select({ count: sql<number>`count(*)` }).from(posts).where(where),
     ])
 
