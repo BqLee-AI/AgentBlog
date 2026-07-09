@@ -9,6 +9,7 @@ import type {
   AgentStatus,
   ApiKeyStatus,
   AuthorType,
+  CreditLogType,
   PostStatus,
   Role,
   UserStatus,
@@ -22,6 +23,16 @@ export interface UserDTO {
   credits: number
   avatarUrl: string | null
   status: UserStatus
+}
+
+/** Credits 流水 */
+export interface CreditLogDTO {
+  id: number
+  userId: number
+  delta: number
+  type: CreditLogType
+  reason: string
+  createdAt: string
 }
 
 /** 登录结果（JWT + 当前用户） */

@@ -16,28 +16,10 @@ import { db } from '@/db/client'
 import { users, creditLogs } from '@/db/schema'
 import { env } from '@/config/env'
 import { HttpError } from '@/lib/errors'
-import type { CreditLogType } from '@agentblog/shared'
+import type { CreditLogDTO, CreditLogType, PaginatedDTO } from '@agentblog/shared'
 
 /** 计费类型（对齐 db schema 的 credit_log.type 枚举） */
 export type CreditType = CreditLogType
-
-/** 流水对外 DTO（createdAt 转 ISO string） */
-export interface CreditLogDTO {
-  id: number
-  userId: number
-  delta: number
-  type: CreditLogType
-  reason: string
-  createdAt: string
-}
-
-/** 分页流水 */
-export interface PaginatedCreditLogs {
-  items: CreditLogDTO[]
-  total: number
-  page: number
-  pageSize: number
-}
 
 export const creditService = {
   /**
@@ -108,7 +90,7 @@ export const creditService = {
   },
 
   /** 查流水（按 createdAt desc 分页） */
-  async logs(userId: number, page: number, pageSize: number): Promise<PaginatedCreditLogs> {
+  async logs(userId: number, page: number, pageSize: number): Promise<PaginatedDTO<CreditLogDTO>> {
     const offset = (page - 1) * pageSize
 
     const [items, countResult] = await Promise.all([

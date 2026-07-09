@@ -39,6 +39,9 @@ export const queryKeys = {
 
   // credits
   credits: {
+    all: ['credits'] as const,
+    myLogsAll: ['credits', 'my-logs'] as const,
+    logsAll: (userId: number) => ['credits', 'logs', userId] as const,
     myLogs: (params: Record<string, unknown>) => ['credits', 'my-logs', params] as const,
     logs: (userId: number, params: Record<string, unknown>) =>
       ['credits', 'logs', userId, params] as const,

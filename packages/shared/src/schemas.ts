@@ -19,6 +19,7 @@ export type PaginationDTO = z.infer<typeof paginationSchema>
 
 /** 角色枚举校验（与 shared/constants 的 Role 对齐） */
 export const roleSchema = z.enum([Role.SUPER_ADMIN, Role.ADMIN, Role.USER])
+export type RoleDTO = z.infer<typeof roleSchema>
 
 /** 文章状态枚举校验 */
 export const postStatusSchema = z.enum([PostStatus.DRAFT, PostStatus.PUBLISHED])
@@ -121,3 +122,9 @@ export const rechargeSchema = z.object({
   reason: z.string().default('手动充值'),
 })
 export type RechargeDTO = z.infer<typeof rechargeSchema>
+
+/** 用户角色调整（仅 super_admin） */
+export const updateUserRoleSchema = z.object({
+  role: roleSchema,
+})
+export type UpdateUserRoleDTO = z.infer<typeof updateUserRoleSchema>
