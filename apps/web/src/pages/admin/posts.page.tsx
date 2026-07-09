@@ -62,8 +62,9 @@ export default function AdminPostsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-col gap-4 rounded-xl border bg-card p-6 sm:flex-row sm:items-center sm:justify-between">
+      <section className="page-hero flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
+          <span className="eyebrow">Editorial Workflow</span>
           <h1 className="text-2xl font-semibold tracking-tight">文章管理</h1>
           <p className="text-sm text-muted-foreground">
             创建、编辑和删除后台文章。草稿会保留在后台，公开页仍只认 slug。
@@ -77,7 +78,7 @@ export default function AdminPostsPage() {
         </Button>
       </section>
 
-      <section className="flex flex-wrap gap-2">
+      <section className="ui-panel-soft flex flex-wrap gap-2 px-4 py-4">
         <Button
           variant={!status ? 'default' : 'outline'}
           size="sm"
@@ -122,15 +123,15 @@ export default function AdminPostsPage() {
             const deleting = deletePost.isPending && deletePost.variables === post.id
 
             return (
-              <article key={post.id} className="space-y-4 rounded-xl border bg-card p-5">
+              <article key={post.id} className="ui-panel space-y-4 p-5">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <span
                         className={`rounded-full px-2.5 py-1 text-xs font-medium ${
                           post.status === 'published'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-amber-100 text-amber-700'
+                            ? 'bg-[rgba(43,168,162,0.16)] text-primary'
+                            : 'bg-[rgba(255,210,63,0.22)] text-[#9a6a00]'
                         }`}
                       >
                         {post.status === 'published' ? '已发布' : '草稿'}
@@ -197,7 +198,7 @@ export default function AdminPostsPage() {
             )
           })}
 
-          <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="ui-panel-soft flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">
               第 {page} / {totalPages} 页，共 {postsQuery.data.total} 篇
             </p>
@@ -223,7 +224,7 @@ export default function AdminPostsPage() {
         </section>
       ) : null}
 
-      <section className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+      <section className="soft-note p-4 text-sm text-muted-foreground">
         <div className="flex items-start gap-3">
           <FileText className="mt-0.5 h-4 w-4 shrink-0" />
           <p>表单里不暴露 slug；草稿首次发布时由后端生成并永久固定。</p>

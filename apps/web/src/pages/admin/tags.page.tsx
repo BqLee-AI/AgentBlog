@@ -43,14 +43,15 @@ export default function AdminTagsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="space-y-2">
+      <section className="page-hero space-y-2">
+        <span className="eyebrow">Taxonomy</span>
         <h1 className="text-2xl font-semibold tracking-tight">标签管理</h1>
         <p className="text-sm text-muted-foreground">
           标签可公开读取，但创建和删除只开放给 admin+。
         </p>
       </section>
 
-      <section className="rounded-xl border bg-card p-6">
+      <section className="ui-panel p-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="flex-1">
@@ -88,7 +89,7 @@ export default function AdminTagsPage() {
             const deleting = deleteTag.isPending && deleteTag.variables === tag.id
 
             return (
-              <article key={tag.id} className="flex flex-col gap-3 rounded-xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+              <article key={tag.id} className="ui-panel flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
                   <h2 className="font-medium">{tag.name}</h2>
                   <p className="text-sm text-muted-foreground">slug: {tag.slug}</p>

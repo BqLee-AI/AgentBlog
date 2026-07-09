@@ -117,7 +117,8 @@ export default function PostEditPage() {
 
   return (
     <div className="space-y-6">
-      <section className="space-y-2">
+      <section className="page-hero space-y-2">
+        <span className="eyebrow">{isEdit ? 'Edit Story' : 'New Story'}</span>
         <h1 className="text-2xl font-semibold tracking-tight">
           {isEdit ? '编辑文章' : '新建文章'}
         </h1>
@@ -128,7 +129,7 @@ export default function PostEditPage() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-          <section className="space-y-6 rounded-xl border bg-card p-6">
+          <section className="ui-panel space-y-6 p-6">
             <FormField
               control={form.control}
               name="title"
@@ -154,7 +155,7 @@ export default function PostEditPage() {
                       {...field}
                       value={field.value ?? ''}
                       rows={3}
-                      className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      className="field-surface flex w-full px-4 py-3 text-sm placeholder:text-muted-foreground/80"
                       placeholder="用 1-2 句话概括文章内容"
                     />
                   </FormControl>
@@ -173,7 +174,7 @@ export default function PostEditPage() {
                     <textarea
                       {...field}
                       rows={16}
-                      className="flex min-h-[360px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      className="field-surface flex min-h-[360px] w-full px-4 py-3 font-mono text-sm placeholder:text-muted-foreground/80"
                       placeholder="# 标题&#10;&#10;开始写正文"
                     />
                   </FormControl>
@@ -193,7 +194,7 @@ export default function PostEditPage() {
           </section>
 
           <aside className="space-y-6">
-            <section className="space-y-4 rounded-xl border bg-card p-6">
+            <section className="ui-panel space-y-4 p-6">
               <FormField
                 control={form.control}
                 name="status"
@@ -204,7 +205,7 @@ export default function PostEditPage() {
                       <select
                         value={field.value}
                         onChange={(event) => field.onChange(event.target.value)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        className="field-surface h-11 px-4 py-2 text-sm"
                       >
                         <option value="draft">草稿</option>
                         <option value="published">已发布</option>
@@ -249,7 +250,7 @@ export default function PostEditPage() {
                             return (
                               <label
                                 key={tag.id}
-                                className="flex cursor-pointer items-center justify-between rounded-md border px-3 py-2 text-sm"
+                                className="field-surface flex cursor-pointer items-center justify-between px-4 py-3 text-sm"
                               >
                                 <span>{tag.name}</span>
                                 <input
@@ -273,7 +274,7 @@ export default function PostEditPage() {
                           <Empty
                             title="暂无标签"
                             description="先去标签管理页创建标签，再回来给文章打标。"
-                            className="rounded-md border py-8"
+                            className="rounded-[1.25rem] py-8"
                           />
                         )}
                       </div>
@@ -284,9 +285,9 @@ export default function PostEditPage() {
               />
             </section>
 
-            <section className="space-y-3 rounded-xl border bg-card p-6">
+            <section className="ui-panel space-y-3 p-6">
               <h2 className="text-sm font-medium text-muted-foreground">Markdown 预览</h2>
-              <div className="max-h-[420px] overflow-auto rounded-lg border bg-background p-4">
+              <div className="max-h-[420px] overflow-auto rounded-[1.25rem] border border-primary/10 bg-white/75 p-4">
                 {contentPreview ? (
                   <Markdown content={contentPreview} />
                 ) : (
