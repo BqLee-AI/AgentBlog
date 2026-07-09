@@ -52,6 +52,21 @@ describe('request', () => {
     expect(onUnauthorized).toHaveBeenCalledTimes(1)
   })
 
+  it('非 401 的 /auth/me 失败不会清登录态，也不会触发 unauthorized handler', async () => {
+    const onUnauthorized = vi.fn()
+    setUnauthorizedHandler(onUnauthorized)
+    authStore.getState().setAuth('server-error-token', user)
+    queryClient.setQueryData(['temp'], { ok: true })
+
+    await expect(request('/api/auth/me')).rejects.toMatchObject({
+      code: ErrorCode.INTERNAL_ERROR,
+    })
+
+    expect(authStore.getState().token).toBe('server-error-token')
+    expect(queryClient.getQueryData(['temp'])).toEqual({ ok: true })
+    expect(onUnauthorized).not.toHaveBeenCalled()
+  })
+
   it('402 会派发额度不足事件', async () => {
     server.use(
       http.post(/\/api\/chat$/, () =>

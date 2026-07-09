@@ -55,12 +55,66 @@ export const handlers = [
       })
     }
 
+    if (auth === 'Bearer server-error-token') {
+      return HttpResponse.json(
+        {
+          ok: false,
+          error: {
+            code: ErrorCode.INTERNAL_ERROR,
+            message: '服务器开小差了',
+          },
+        },
+        { status: 500 },
+      )
+    }
+
     return HttpResponse.json(
       {
         ok: false,
         error: {
           code: ErrorCode.UNAUTHORIZED,
           message: '未提供认证信息',
+        },
+      },
+      { status: 401 },
+    )
+  }),
+
+  http.post(/\/api\/auth\/login$/, async ({ request }) => {
+    const body = (await request.json()) as { username?: string; password?: string }
+
+    if (body.username === 'field-error') {
+      return HttpResponse.json(
+        {
+          ok: false,
+          error: {
+            code: ErrorCode.VALIDATION_ERROR,
+            message: '参数校验失败',
+            fields: {
+              username: ['用户名已存在'],
+            },
+          },
+        },
+        { status: 400 },
+      )
+    }
+
+    if (body.username === 'admin' && body.password === 'secret123') {
+      return HttpResponse.json({
+        ok: true,
+        data: {
+          token: 'test-token',
+          user: defaultUser,
+        },
+      })
+    }
+
+    return HttpResponse.json(
+      {
+        ok: false,
+        error: {
+          code: ErrorCode.UNAUTHORIZED,
+          message: '用户名或密码错误',
         },
       },
       { status: 401 },
