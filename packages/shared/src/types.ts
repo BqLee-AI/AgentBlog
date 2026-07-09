@@ -67,6 +67,11 @@ export interface PostDTO {
   updatedAt: string
 }
 
+/** 阅读/编辑响应中的文章（带作者归属） */
+export interface PostWithAuthorDTO extends PostDTO {
+  author: AuthorInfoDTO
+}
+
 /** 标签（需求 §4.2 文章-标签多对多） */
 export interface TagDTO {
   id: number

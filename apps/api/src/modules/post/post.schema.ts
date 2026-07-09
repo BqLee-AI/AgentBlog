@@ -10,22 +10,11 @@
  * 分工：仅后端内部消费的 DTO 留模块内；跨前后端复用的枚举（PostStatus/AuthorType）从
  * @agentblog/shared 引入，不重复定义。
  */
-import { z } from 'zod'
-import { AuthorType, PostStatus } from '@agentblog/shared'
 export {
   createPostSchema,
+  listPostsQuerySchema,
   updatePostSchema,
   type CreatePostDTO,
+  type ListPostsQuery,
   type UpdatePostDTO,
 } from '@agentblog/shared'
-
-/** 列表查询参数（GET /api/posts） */
-export const listPostsQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(50).default(10),
-  tag: z.string().optional(), // tag slug
-  status: z.enum([PostStatus.DRAFT, PostStatus.PUBLISHED]).optional(),
-  authorType: z.enum([AuthorType.USER, AuthorType.AGENT]).optional(),
-  authorId: z.coerce.number().int().optional(),
-})
-export type ListPostsQuery = z.infer<typeof listPostsQuerySchema>
