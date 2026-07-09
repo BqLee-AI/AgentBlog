@@ -7,8 +7,7 @@
  *   GET  /api/credits/logs/:userId —— admin+ 查任意用户流水
  */
 import { Hono } from 'hono'
-import { z } from 'zod'
-import { Role, paginationSchema } from '@agentblog/shared'
+import { Role, paginationSchema, rechargeSchema } from '@agentblog/shared'
 import { ok } from '@/lib/response'
 import { zodCheck } from '@/lib/zod-check'
 import { authMiddleware } from '@/middlewares/auth'
@@ -19,13 +18,6 @@ export const creditsRoutes = new Hono()
 
 // 先认证（JWT）
 creditsRoutes.use('*', authMiddleware)
-
-// admin+ 充值
-const rechargeSchema = z.object({
-  userId: z.number().int().positive(),
-  amount: z.number().int().positive(),
-  reason: z.string().default('手动充值'),
-})
 
 creditsRoutes.post(
   '/recharge',
