@@ -12,8 +12,11 @@
  * 资源归属：主人或 admin+（service 层校验）。
  */
 import { Hono } from 'hono'
-import { z } from 'zod'
-import { createAgentSchema, updateAgentSchema } from '@agentblog/shared'
+import {
+  createAgentSchema,
+  issueApiKeySchema,
+  updateAgentSchema,
+} from '@agentblog/shared'
 import { ok } from '@/lib/response'
 import { zodCheck } from '@/lib/zod-check'
 import { authMiddleware } from '@/middlewares/auth'
@@ -71,7 +74,7 @@ agentsRoutes.get('/:id/api-keys', async (c) => {
 // 签发 API Key（🔴 明文仅返回一次）
 agentsRoutes.post(
   '/:id/api-keys',
-  zodCheck('json', z.object({ name: z.string().max(50).optional() })),
+  zodCheck('json', issueApiKeySchema),
   async (c) => {
     const agentId = Number(c.req.param('id'))
     const { name } = c.req.valid('json')
