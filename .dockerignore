@@ -1,0 +1,34 @@
+# Docker 构建上下文排除项（加速构建 + 避免权限/secrets 泄漏）
+# Dockerfile 只 COPY apps/api/src + apps/api/drizzle + packages/shared + 清单文件，
+# 其余一律排除。尤其 node_modules（由镜像内 bun install 生成）、data（运行时数据）、.env（secrets）。
+
+# 依赖（镜像内重新 install，不打包宿主 node_modules）
+node_modules
+**/node_modules
+
+# 运行时数据（SQLite + 上传文件，容器内挂卷生成）
+apps/api/data
+**/data
+
+# secrets（生产配置只读挂载，不入镜像）
+.env
+.env.*
+!.env.example
+
+# 构建产物
+dist
+build
+**/dist
+
+# 版本控制与 IDE
+.git
+.gitignore
+.vscode
+.idea
+*.log
+
+# 其他 workspace 不相关产物
+apps/web
+.tmp
+.agents
+docs

@@ -4,7 +4,9 @@
 # Bun 直接跑源码，无需 build 步骤。
 #
 # 🔴 CMD 自动 migrate（幂等），不含 seed（seed 仅首次手动，14 §2.2）。
-FROM oven/bun:1.1-debian AS base
+# base 镜像 pin 到与开发环境一致的 bun 1.3.11（泛 tag 如 1.3 会解析到 1.3.14，
+# 其 lockfile 解析更严格，与 1.3.11 生成的 bun.lock 不兼容，触发 "lockfile had changes"）
+FROM oven/bun:1.3.11 AS base
 WORKDIR /app
 
 # ── 依赖层（利用缓存：先 copy 清单文件）──
@@ -13,8 +15,10 @@ COPY package.json bun.lock tsconfig.base.json ./
 COPY apps/api/package.json ./apps/api/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
 
-# 装全部依赖（含 devDependencies 供 migrate/seed 脚本用；体积可接受，v1 不做多阶段）
-RUN bun install --frozen-lockfile
+# 装全部依赖（含 devDependencies 供 migrate/seed 脚本用；体积可接受，v1 不做多阶段）。
+# 不用 --frozen-lockfile：bun lockfile 含平台相关 hash，Windows 开发机生成的 bun.lock
+# 在 Linux 容器内会被判为 "had changes"。普通 install 在容器内按需解析，跨平台可用。
+RUN bun install
 
 # ── 代码层 ──
 COPY packages/shared ./packages/shared
