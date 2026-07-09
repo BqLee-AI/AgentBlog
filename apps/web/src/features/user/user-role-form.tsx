@@ -54,9 +54,9 @@ export function UserRoleForm({
   }
 
   return (
-    <div className="rounded-lg border bg-card p-4">
-      <div className="mb-4">
-        <h3 className="text-base font-semibold">调整角色</h3>
+    <div className="ui-panel space-y-5 p-5 sm:p-6">
+      <div className="space-y-2">
+        <h3 className="section-title w-fit border-none pb-0 text-base">调整角色</h3>
         <p className="text-sm text-muted-foreground">
           仅 `super_admin` 可操作，当前目标：{user.username}
         </p>
@@ -72,7 +72,7 @@ export function UserRoleForm({
                 <FormLabel>目标角色</FormLabel>
                 <FormControl>
                   <select
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="field-surface flex h-11 w-full px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     value={field.value}
                     onChange={field.onChange}
                     onBlur={field.onBlur}

@@ -63,7 +63,7 @@ export function IssueApiKeyForm({
           )}
         />
 
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-2">
           <Button type="submit" disabled={submitting}>
             {submitting ? '签发中…' : '签发新 Key'}
           </Button>
