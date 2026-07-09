@@ -14,6 +14,7 @@ import { db } from '@/db/client'
 import { posts } from '@/db/schema'
 import { HttpError } from '@/lib/errors'
 import { generateSlug } from '@/lib/slug'
+import { agentRepository } from '@/modules/agent/agent.repository'
 import { postRepository } from './post.repository'
 import type { CreatePostDTO, ListPostsQuery, UpdatePostDTO } from '@agentblog/shared'
 import type { PostRow } from './post.repository'
@@ -26,9 +27,14 @@ function canManageOthers(role: Role): boolean {
   return role === 'admin' || role === 'super_admin'
 }
 
-/** 是否为该文章的作者（仅 user 作者路径；agent 作者归属判断见 07） */
-function isOwner(post: { authorType: string; authorId: number }, actorId: number): boolean {
-  return post.authorType === 'user' && post.authorId === actorId
+/** 是否为该文章的作者（user 本人，或该 Agent 的主人）。 */
+async function isOwner(post: { authorType: string; authorId: number }, actorId: number): Promise<boolean> {
+  if (post.authorType === 'user') {
+    return post.authorId === actorId
+  }
+
+  const agent = await agentRepository.findById(post.authorId)
+  return agent?.userId === actorId
 }
 
 export const postService = {
@@ -86,7 +92,7 @@ export const postService = {
     if (!post) throw HttpError.notFound('文章不存在')
 
     // 草稿做归属校验；已发布放行
-    if (post.status === 'draft' && !isOwner(post, actor.id) && !canManageOthers(actor.role)) {
+    if (post.status === 'draft' && !(await isOwner(post, actor.id)) && !canManageOthers(actor.role)) {
       throw HttpError.notFound('文章不存在')
     }
     const tags = await postRepository.getTags(post.id)
@@ -100,13 +106,33 @@ export const postService = {
   async list(
     query: ListPostsQuery,
     isPublicView: boolean,
-  ): Promise<{ items: (PostRow & { tags: { id: number; name: string; slug: string }[] })[]; total: number }> {
+    actor?: Actor,
+  ): Promise<{
+    items: (PostRow & { tags: { id: number; name: string; slug: string }[] })[]
+    total: number
+    page: number
+    pageSize: number
+  }> {
     if (isPublicView) {
       query.status = 'published'
     }
-    const { items, total } = await postRepository.list(query)
+
+    if (!isPublicView && !actor) {
+      throw HttpError.unauthorized('未提供认证信息')
+    }
+
+    const { items, total } = isPublicView || (actor && canManageOthers(actor.role))
+      ? await postRepository.list(query)
+      : await (async () => {
+          const ownedAgent = await agentRepository.findByUserId(actor!.id)
+          return postRepository.listOwnedByUser(query, {
+            userId: actor!.id,
+            ...(ownedAgent ? { agentId: ownedAgent.id } : {}),
+          })
+        })()
+
     const withTags = await Promise.all(items.map(async (p) => ({ ...p, tags: await postRepository.getTags(p.id) })))
-    return { items: withTags, total }
+    return { items: withTags, total, page: query.page, pageSize: query.pageSize }
   },
 
   /**
@@ -119,7 +145,7 @@ export const postService = {
     if (!post) throw HttpError.notFound('文章不存在')
 
     // 资源归属校验
-    if (!isOwner(post, actor.id) && !canManageOthers(actor.role)) {
+    if (!(await isOwner(post, actor.id)) && !canManageOthers(actor.role)) {
       throw HttpError.forbidden('无权修改他人文章')
     }
 
@@ -159,7 +185,7 @@ export const postService = {
     const post = await postRepository.findById(postId)
     if (!post) throw HttpError.notFound('文章不存在')
 
-    if (!isOwner(post, actor.id) && actor.role === 'user') {
+    if (!(await isOwner(post, actor.id)) && actor.role === 'user') {
       throw HttpError.forbidden('无权删除他人文章')
     }
     await postRepository.delete(postId)

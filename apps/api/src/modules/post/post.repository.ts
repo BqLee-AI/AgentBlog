@@ -6,7 +6,7 @@
  * 依赖方向：routes → service → repository → db，不反向。
  * repository 之间不互相调用（02 §三铁律）。
  */
-import { and, desc, eq, sql } from 'drizzle-orm'
+import { and, desc, eq, or, sql } from 'drizzle-orm'
 import { db } from '@/db/client'
 import { posts, postTags, tags } from '@/db/schema'
 import type { ListPostsQuery } from './post.schema'
@@ -69,6 +69,43 @@ function buildListWhere(query: {
   return and(...conditions)
 }
 
+function buildOwnedScopeWhere(
+  query: {
+    status?: ListPostsQuery['status']
+    authorType?: ListPostsQuery['authorType']
+    tag?: ListPostsQuery['tag']
+  },
+  owner: {
+    userId: number
+    agentId?: number
+  },
+) {
+  const ownUserPosts = and(eq(posts.authorType, 'user'), eq(posts.authorId, owner.userId))
+  const ownAgentPosts = owner.agentId !== undefined
+    ? and(eq(posts.authorType, 'agent'), eq(posts.authorId, owner.agentId))
+    : undefined
+
+  const authorScope = query.authorType === 'user'
+    ? ownUserPosts
+    : query.authorType === 'agent'
+      ? (ownAgentPosts ?? sql`1 = 0`)
+      : (ownAgentPosts ? or(ownUserPosts, ownAgentPosts) : ownUserPosts)
+
+  const conditions = [
+    query.status ? eq(posts.status, query.status) : undefined,
+    query.tag
+      ? sql`${posts.id} IN (
+          SELECT pt.post_id FROM ${postTags} pt
+          JOIN ${tags} t ON t.id = pt.tag_id
+          WHERE t.slug = ${query.tag}
+        )`
+      : undefined,
+    authorScope,
+  ]
+
+  return and(...conditions)
+}
+
 export const postRepository = {
   /** 按 id 查单条（后台编辑用，含草稿） */
   async findById(id: number): Promise<PostRow | null> {
@@ -88,6 +125,22 @@ export const postRepository = {
    */
   async list(query: ListPostsQuery): Promise<{ items: PostRow[]; total: number }> {
     const where = buildListWhere(query)
+
+    const offset = (query.page - 1) * query.pageSize
+    const [items, countResult] = await Promise.all([
+      db.select(postColumns).from(posts).where(where).orderBy(desc(posts.createdAt)).limit(query.pageSize).offset(offset),
+      db.select({ count: sql<number>`count(*)` }).from(posts).where(where),
+    ])
+
+    return { items, total: countResult[0]?.count ?? 0 }
+  },
+
+  /** 普通用户后台列表：只返回自己的文章 + 自己 Agent 的文章。 */
+  async listOwnedByUser(
+    query: ListPostsQuery,
+    owner: { userId: number; agentId?: number },
+  ): Promise<{ items: PostRow[]; total: number }> {
+    const where = buildOwnedScopeWhere(query, owner)
 
     const offset = (query.page - 1) * query.pageSize
     const [items, countResult] = await Promise.all([
