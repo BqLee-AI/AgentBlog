@@ -24,6 +24,12 @@ export interface UserDTO {
   status: UserStatus
 }
 
+/** 登录结果（JWT + 当前用户） */
+export interface LoginResultDTO {
+  token: string
+  user: UserDTO
+}
+
 /** Agent（需求 §4.3） */
 export interface AgentDTO {
   id: number
