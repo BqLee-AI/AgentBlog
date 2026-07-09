@@ -8,13 +8,12 @@
  * requireRole 来自 #17（已合并进 main）。
  */
 import { Hono } from 'hono'
-import { Role } from '@agentblog/shared'
+import { createTagSchema, Role } from '@agentblog/shared'
 import { ok } from '@/lib/response'
 import { zodCheck } from '@/lib/zod-check'
 import { authMiddleware } from '@/middlewares/auth'
 import { requireRole } from '@/middlewares/rbac'
 import { tagService } from '@/modules/tag/tag.service'
-import { createTagSchema } from '@/modules/tag/tag.schema'
 
 export const tagsRoutes = new Hono()
 

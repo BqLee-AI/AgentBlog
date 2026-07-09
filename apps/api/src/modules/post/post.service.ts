@@ -15,7 +15,8 @@ import { posts } from '@/db/schema'
 import { HttpError } from '@/lib/errors'
 import { generateSlug } from '@/lib/slug'
 import { postRepository } from './post.repository'
-import type { CreatePostDTO, UpdatePostDTO, ListPostsQuery } from './post.schema'
+import type { CreatePostDTO, UpdatePostDTO } from '@agentblog/shared'
+import type { ListPostsQuery } from './post.schema'
 import type { PostRow } from './post.repository'
 // Actor 现已上提至 @agentblog/shared（review should-fix-2），避免扇入依赖 user.service。
 // Role 同从 shared 引入。

@@ -7,7 +7,7 @@
 import { tagRepository } from './tag.repository'
 import { generateSlug } from '@/lib/slug'
 import { HttpError } from '@/lib/errors'
-import type { CreateTagDTO } from './tag.schema'
+import type { CreateTagDTO } from '@agentblog/shared'
 import type { TagRow } from './tag.repository'
 
 export const tagService = {

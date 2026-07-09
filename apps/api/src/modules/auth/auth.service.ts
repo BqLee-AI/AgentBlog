@@ -15,8 +15,7 @@ import { users } from '@/db/schema'
 import { hashPassword, verifyPassword } from '@/lib/hash'
 import { HttpError } from '@/lib/errors'
 import { signToken } from '@/lib/jwt'
-import type { UserDTO } from '@agentblog/shared'
-import type { LoginDTO, RegisterDTO } from './auth.schema'
+import type { LoginDTO, LoginResultDTO, RegisterDTO, UserDTO } from '@agentblog/shared'
 
 /** 从 db 行剔除 passwordHash 等内部字段，映射成对外的 UserDTO */
 function toUserDTO(user: typeof users.$inferSelect): UserDTO {
@@ -32,7 +31,7 @@ function toUserDTO(user: typeof users.$inferSelect): UserDTO {
 
 export const authService = {
   /** 登录：校验账号密码 → 签发 token */
-  async login(dto: LoginDTO): Promise<{ token: string; user: UserDTO }> {
+  async login(dto: LoginDTO): Promise<LoginResultDTO> {
     const [user] = await db.select().from(users).where(eq(users.username, dto.username)).limit(1)
 
     // 用户不存在与密码错误返回相同消息，防用户名枚举
