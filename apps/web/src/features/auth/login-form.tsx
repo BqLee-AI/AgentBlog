@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { ApiError } from '@/lib/http-error'
 import { setServerErrors } from '@/lib/set-server-errors'
 
 interface LoginFormProps {
@@ -52,8 +53,10 @@ export function LoginForm({ onSubmit, submitting, onError }: LoginFormProps) {
     } catch (err) {
       // 字段级错误回填到表单（setServerErrors 内部判 isValidation）
       setServerErrors(form, err)
-      // 其余错误交给父层
-      onError?.(err)
+      // 仅非字段级错误交给父层；VALIDATION_ERROR 已由表单内回填
+      if (!(err instanceof ApiError) || !err.isValidation) {
+        onError?.(err)
+      }
     }
   }
 
