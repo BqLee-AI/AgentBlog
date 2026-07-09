@@ -13,9 +13,9 @@ interface ListSkeletonProps {
 
 export function ListSkeleton({ rows = 5, className }: ListSkeletonProps) {
   return (
-    <div className={`space-y-3 ${className ?? ''}`}>
+    <div className={`space-y-4 ${className ?? ''}`}>
       {Array.from({ length: rows }).map((_, i) => (
-        <Skeleton key={i} className="h-16 w-full" />
+        <Skeleton key={i} className="h-24 w-full rounded-[1.5rem]" />
       ))}
     </div>
   )

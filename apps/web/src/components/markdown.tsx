@@ -29,6 +29,14 @@ export function Markdown({ content, className }: MarkdownProps) {
           img: ({ ...props }: ComponentPropsWithoutRef<'img'>) => (
             <img {...props} loading="lazy" className="rounded-md" />
           ),
+          table: ({ className, ...props }: ComponentPropsWithoutRef<'table'>) => (
+            <div className="my-6 overflow-x-auto rounded-xl border border-primary/10 bg-white/90">
+              <table {...props} className={cn('min-w-full text-sm', className)} />
+            </div>
+          ),
+          pre: ({ className, ...props }: ComponentPropsWithoutRef<'pre'>) => (
+            <pre {...props} className={cn('overflow-x-auto rounded-xl', className)} />
+          ),
           // 外链新窗口打开 + 防 referrer 泄漏
           a: ({ ...props }: ComponentPropsWithoutRef<'a'>) => (
             <a {...props} target="_blank" rel="noopener noreferrer" />
