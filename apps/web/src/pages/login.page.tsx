@@ -10,13 +10,32 @@
  */
 import { useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import type { Location } from 'react-router-dom'
+import type { Location, To } from 'react-router-dom'
 
 import { LoginForm } from '@/features/auth/login-form'
 import { authApi } from '@/api/auth.api'
 import type { LoginDTO } from '@agentblog/shared'
 import { useAuthStore } from '@/lib/auth-store'
 import { Spin } from '@/components/feedback/spin'
+
+type RedirectSource = Pick<Location, 'pathname' | 'search' | 'hash' | 'state'>
+
+function getRedirectTarget(locationState: unknown): { to: To; state?: unknown } {
+  const from = (locationState as { from?: RedirectSource } | null)?.from
+
+  if (!from?.pathname || from.pathname === '/login') {
+    return { to: '/admin' }
+  }
+
+  return {
+    to: {
+      pathname: from.pathname,
+      search: from.search ?? '',
+      hash: from.hash ?? '',
+    },
+    state: from.state,
+  }
+}
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -28,11 +47,11 @@ export default function LoginPage() {
   // 顶部全局错误（非字段级）：401 凭证错、网络错误等
   const [globalError, setGlobalError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const redirectTarget = getRedirectTarget(location.state)
 
   // 已明确认证访问 /login → 直接回跳；仅有 token 但仍在校验时先等待，避免 /login 回跳循环
   if (status === 'authenticated') {
-    const from = (location.state as { from?: Location } | null)?.from?.pathname ?? '/admin'
-    return <Navigate to={from} replace />
+    return <Navigate to={redirectTarget.to} state={redirectTarget.state} replace />
   }
 
   if (token && (status === 'idle' || status === 'loading')) {
@@ -45,9 +64,7 @@ export default function LoginPage() {
     try {
       const result = await authApi.login(values)
       setAuth(result.token, result.user)
-      const from =
-        (location.state as { from?: Location } | null)?.from?.pathname ?? '/admin'
-      navigate(from, { replace: true })
+      navigate(redirectTarget.to, { replace: true, state: redirectTarget.state })
     } finally {
       setSubmitting(false)
     }
@@ -60,10 +77,14 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="container mx-auto flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="space-y-2 text-center">
-          <h1 className="text-2xl font-bold">登录 AgentBlog</h1>
+    <main className="public-stage flex min-h-screen items-center justify-center px-4 py-10">
+      <div className="page-hero w-full max-w-md space-y-6">
+        <div className="space-y-3 text-center">
+          <span className="eyebrow mx-auto">Welcome Back</span>
+          <h1 className="text-3xl font-black">登录 AgentBlog</h1>
+          <p className="text-sm leading-6 text-muted-foreground">
+            进入后台工作台、在线对话和额度协作空间。
+          </p>
         </div>
 
         <LoginForm onSubmit={onSubmit} submitting={submitting} onError={onError} />
