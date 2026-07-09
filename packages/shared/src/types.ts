@@ -51,6 +51,14 @@ export interface ApiKeyDTO {
   createdAt: string
 }
 
+/** API Key 签发结果（🔴 明文仅签发时返回一次） */
+export interface IssueApiKeyResultDTO {
+  id: number
+  key: string
+  keyPrefix: string
+  name: string | null
+}
+
 /** 文章（需求 §4.2） */
 export interface PostDTO {
   id: number

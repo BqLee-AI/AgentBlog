@@ -14,15 +14,12 @@ import { db } from '@/db/client'
 import { apiKeys, agents, users } from '@/db/schema'
 import { HttpError } from '@/lib/errors'
 import { generateApiKey, hashApiKey, keyPrefix } from '@/lib/crypto'
-import type { ApiKeyDTO, ApiKeyStatus, Actor } from '@agentblog/shared'
-
-/** 签发响应（🔴 明文 key 仅此返回一次） */
-export interface IssueResult {
-  id: number
-  key: string // 明文，仅签发时返回
-  keyPrefix: string
-  name: string | null
-}
+import type {
+  ApiKeyDTO,
+  ApiKeyStatus,
+  Actor,
+  IssueApiKeyResultDTO,
+} from '@agentblog/shared'
 
 /** validate 返回的归属信息（供 apiKeyMiddleware 注入 c.var） */
 export interface ValidateResult {
@@ -75,7 +72,7 @@ export const apiKeyService = {
    * 签发新 Key（🔴 明文仅返回一次）。
    * 校验 Agent 归属后生成 key → hash → 存 hash + prefix → 返回明文。
    */
-  async issue(agentId: number, name: string | null, actor: Actor): Promise<IssueResult> {
+  async issue(agentId: number, name: string | null, actor: Actor): Promise<IssueApiKeyResultDTO> {
     // 校验 Agent 存在 + 归属
     const [agent] = await db.select().from(agents).where(eq(agents.id, agentId)).limit(1)
     if (!agent) {

@@ -91,11 +91,17 @@ export type CreateAgentDTO = z.infer<typeof createAgentSchema>
  */
 export const updateAgentSchema = z.object({
   name: z.string().min(1, { error: '名称不能为空' }).max(50).optional(),
-  avatarUrl: z.string().url({ error: '头像地址格式不正确' }).optional(),
-  systemPrompt: z.string().max(8000, { error: '系统提示词最多 8000 字符' }).optional(),
+  avatarUrl: z.string().url({ error: '头像地址格式不正确' }).nullable().optional(),
+  systemPrompt: z.string().max(8000, { error: '系统提示词最多 8000 字符' }).nullable().optional(),
   status: z.enum([AgentStatus.ACTIVE, AgentStatus.DISABLED]).optional(),
 })
 export type UpdateAgentDTO = z.infer<typeof updateAgentSchema>
+
+/** 签发 API Key（名称可选，仅用于展示识别） */
+export const issueApiKeySchema = z.object({
+  name: z.string().max(50, { error: 'Key 名称最多 50 字符' }).optional(),
+})
+export type IssueApiKeyDTO = z.infer<typeof issueApiKeySchema>
 
 /** Credits 充值（admin+） */
 export const rechargeSchema = z.object({
