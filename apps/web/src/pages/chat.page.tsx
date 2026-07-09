@@ -5,7 +5,7 @@ import { useAuth } from '@/features/auth/use-auth'
 
 export default function ChatPage() {
   const { user } = useAuth()
-  const { messages, status, error, input, handleInputChange, handleSubmit, retry, stop } = useAgentChat()
+  const { messages, status, errorMessage, canRetry, input, handleInputChange, handleSubmit, retry, stop } = useAgentChat()
 
   return (
     <section className="container mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-5xl flex-col px-4 py-6">
@@ -24,7 +24,13 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <ChatMessages messages={messages} status={status} error={error} onRetry={retry} />
+        <ChatMessages
+          messages={messages}
+          status={status}
+          errorMessage={errorMessage}
+          canRetry={canRetry}
+          onRetry={retry}
+        />
 
         <ChatInput
           input={input}

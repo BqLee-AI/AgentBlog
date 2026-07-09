@@ -13,7 +13,8 @@ type ToolPart = Extract<ChatPart, { type: `tool-${string}` } | { type: 'dynamic-
 interface ChatMessagesProps {
   messages: UIMessage[]
   status: ChatStatus
-  error: Error | undefined
+  errorMessage: string | null
+  canRetry: boolean
   onRetry: () => Promise<void> | void
 }
 
@@ -99,12 +100,12 @@ function TypingIndicator() {
   )
 }
 
-export function ChatMessages({ messages, status, error, onRetry }: ChatMessagesProps) {
+export function ChatMessages({ messages, status, errorMessage, canRetry, onRetry }: ChatMessagesProps) {
   const bottomRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [messages, status, error])
+  }, [messages, status, errorMessage])
 
   return (
     <div className="flex-1 overflow-y-auto bg-muted/20 px-4 py-6">
@@ -185,13 +186,15 @@ export function ChatMessages({ messages, status, error, onRetry }: ChatMessagesP
 
           {(status === 'submitted' || status === 'streaming') && <TypingIndicator />}
 
-          {error && (
+          {errorMessage && (
             <div className="flex items-center justify-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm">
-              <span className="text-destructive">对话出错，请重试</span>
-              <Button type="button" variant="ghost" size="sm" onClick={() => void onRetry()}>
-                <RotateCcw className="mr-1 size-4" />
-                重试
-              </Button>
+              <span className="text-destructive">{errorMessage}</span>
+              {canRetry && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => void onRetry()}>
+                  <RotateCcw className="mr-1 size-4" />
+                  重试
+                </Button>
+              )}
             </div>
           )}
 

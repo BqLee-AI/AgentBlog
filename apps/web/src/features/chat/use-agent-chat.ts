@@ -12,6 +12,11 @@ import { authStore } from '@/lib/auth-store'
 import { ApiError } from '@/lib/http-error'
 import { queryKeys } from '@/lib/query-keys'
 
+interface ChatUiError {
+  message: string
+  retryable: boolean
+}
+
 async function parseChatError(response: Response): Promise<Error> {
   const contentType = response.headers.get('content-type') ?? ''
 
@@ -47,11 +52,38 @@ function isBusyStatus(status: ChatStatus) {
   return status === 'submitted' || status === 'streaming'
 }
 
+function getChatUiError(error: Error): ChatUiError {
+  if (error instanceof ApiError) {
+    if (error.code === ErrorCode.INSUFFICIENT_CREDITS) {
+      return { message: '额度不足，请联系管理员充值', retryable: false }
+    }
+
+    if (error.code === ErrorCode.FORBIDDEN) {
+      return { message: error.message || '当前 Agent 无法发起对话', retryable: false }
+    }
+
+    if (error.code === ErrorCode.BAD_REQUEST) {
+      return { message: error.message, retryable: false }
+    }
+
+    return { message: error.message, retryable: false }
+  }
+
+  const text = error.message.toLowerCase()
+  const isNetworkError = text.includes('fetch') || text.includes('network')
+
+  return {
+    message: isNetworkError ? '网络异常，请重试' : error.message || '对话出错，请重试',
+    retryable: true,
+  }
+}
+
 export function useAgentChat() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const location = useLocation()
   const [input, setInput] = useState('')
+  const [uiError, setUiError] = useState<ChatUiError | null>(null)
 
   const chat = useChat({
     transport: new DefaultChatTransport<UIMessage>({
@@ -88,21 +120,16 @@ export function useAgentChat() {
           navigate('/login', { replace: true, state: { from: location } })
           return
         }
-
-        if (error.code === ErrorCode.INSUFFICIENT_CREDITS) {
-          toast.error('额度不足，请联系管理员充值')
-          return
-        }
-
-        toast.error(error.message)
-        return
       }
 
-      toast.error(error.message || '对话出错，请重试')
+      const nextError = getChatUiError(error)
+      setUiError(nextError)
+      toast.error(nextError.message)
     },
   })
 
   function handleInputChange(event: ChangeEvent<HTMLTextAreaElement>) {
+    setUiError(null)
     if (chat.error) {
       chat.clearError()
     }
@@ -116,6 +143,7 @@ export function useAgentChat() {
     const text = draft.trim()
     if (!text || isBusyStatus(chat.status)) return
 
+    setUiError(null)
     setInput('')
     try {
       await chat.sendMessage({ text })
@@ -125,7 +153,10 @@ export function useAgentChat() {
   }
 
   async function retry() {
+    if (!uiError?.retryable) return
+
     try {
+      setUiError(null)
       await chat.regenerate()
     } catch {
       // onError 会统一处理
@@ -139,7 +170,8 @@ export function useAgentChat() {
   return {
     messages: chat.messages,
     status: chat.status,
-    error: chat.error,
+    errorMessage: uiError?.message ?? null,
+    canRetry: uiError?.retryable ?? false,
     input,
     handleInputChange,
     handleSubmit,
