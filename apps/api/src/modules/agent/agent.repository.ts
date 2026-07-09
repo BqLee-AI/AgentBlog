@@ -4,9 +4,9 @@
  * 纯 Drizzle 查询，不含业务规则。
  */
 import { eq } from 'drizzle-orm'
+import type { UpdateAgentDTO } from '@agentblog/shared'
 import { db } from '@/db/client'
 import { agents } from '@/db/schema'
-import type { UpdateAgentDTO } from './agent.schema'
 
 export type AgentRow = typeof agents.$inferSelect
 

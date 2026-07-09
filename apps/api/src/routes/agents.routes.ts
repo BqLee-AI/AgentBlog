@@ -13,12 +13,12 @@
  */
 import { Hono } from 'hono'
 import { z } from 'zod'
+import { createAgentSchema, updateAgentSchema } from '@agentblog/shared'
 import { ok } from '@/lib/response'
 import { zodCheck } from '@/lib/zod-check'
 import { authMiddleware } from '@/middlewares/auth'
 import { agentService } from '@/modules/agent/agent.service'
 import { apiKeyService } from '@/modules/api-key/api-key.service'
-import { createAgentSchema, updateAgentSchema } from '@/modules/agent/agent.schema'
 
 export const agentsRoutes = new Hono()
 

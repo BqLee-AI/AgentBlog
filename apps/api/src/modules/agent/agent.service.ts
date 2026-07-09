@@ -9,7 +9,7 @@
 import type { AgentDTO, Actor } from '@agentblog/shared'
 import { HttpError } from '@/lib/errors'
 import { agentRepository, type AgentRow } from './agent.repository'
-import type { CreateAgentDTO, UpdateAgentDTO } from './agent.schema'
+import type { CreateAgentDTO, UpdateAgentDTO } from '@agentblog/shared'
 
 /** 从 repository 行映射成对外 AgentDTO */
 function toAgentDTO(agent: AgentRow): AgentDTO {
