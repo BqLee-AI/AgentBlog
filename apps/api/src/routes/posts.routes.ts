@@ -28,7 +28,13 @@ export const postsRoutes = new Hono()
 // ── 公开：列表（仅 published）──
 postsRoutes.get('/', zodCheck('query', listPostsQuerySchema), async (c) => {
   const query = c.req.valid('query')
-  const result = await postService.list(query, true) // isPublicView=true 强制 published
+  const hasAuthHeader = Boolean(c.req.header('Authorization'))
+  if (hasAuthHeader) {
+    await authMiddleware(c, async () => {})
+  }
+
+  const actor = hasAuthHeader ? c.var.user : undefined
+  const result = await postService.list(query, !actor, actor)
   const items = await Promise.all(result.items.map(async (p) => ({ ...p, author: await withAuthor(p) })))
   return ok(c, { ...result, items })
 })
