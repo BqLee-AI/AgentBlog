@@ -42,9 +42,9 @@ const ADMIN_PLUS: Role[] = ['admin', 'super_admin']
 
 function PublicLayout() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="public-stage relative flex min-h-screen flex-col overflow-x-hidden">
       <SiteHeader />
-      <main className="flex-1">
+      <main className="relative flex flex-1 flex-col pb-12">
         <Outlet />
       </main>
     </div>
