@@ -15,11 +15,12 @@
  * 📌 资源归属校验在 service 层（update/remove 传 actor），不在中间件。
  */
 import { Hono } from 'hono'
+import { createPostSchema, updatePostSchema } from '@agentblog/shared'
 import { ok } from '@/lib/response'
 import { zodCheck } from '@/lib/zod-check'
 import { authMiddleware } from '@/middlewares/auth'
 import { postService } from '@/modules/post/post.service'
-import { createPostSchema, updatePostSchema, listPostsQuerySchema } from '@/modules/post/post.schema'
+import { listPostsQuerySchema } from '@/modules/post/post.schema'
 import { withAuthor } from '@/modules/post/post.author'
 
 export const postsRoutes = new Hono()

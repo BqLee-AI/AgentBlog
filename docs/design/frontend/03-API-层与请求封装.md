@@ -199,12 +199,12 @@ function handleSideEffects(err: ApiError) {
 ```ts
 // src/api/posts.api.ts
 import { request } from '@/lib/request'
-import type { Post, Paginated, ListPostsQuery } from '@agentblog/shared'
+import type { PostDTO, PaginatedDTO, ListPostsQuery } from '@agentblog/shared'
 
 export const postsApi = {
   // 公开：列表（仅 published）
   listPublic(query: ListPostsQuery, signal?: AbortSignal) {
-    return request<Paginated<Post>>('/api/posts', {
+    return request<PaginatedDTO<PostDTO>>('/api/posts', {
       method: 'GET',
       query: { ...query },
       signal,
@@ -214,22 +214,22 @@ export const postsApi = {
 
   // 公开：详情（按 slug）
   getBySlug(slug: string, signal?: AbortSignal) {
-    return request<Post>(`/api/posts/${encodeURIComponent(slug)}`, { signal, public: true })
+    return request<PostDTO>(`/api/posts/${encodeURIComponent(slug)}`, { signal, public: true })
   },
 
   // 受保护：按 id 取（后台编辑，含草稿）
   getByIdForEdit(id: number, signal?: AbortSignal) {
-    return request<Post>(`/api/posts/by-id/${id}`, { signal })
+    return request<PostDTO>(`/api/posts/by-id/${id}`, { signal })
   },
 
   // 受保护：创建
   create(dto: CreatePostDTO) {
-    return request<Post>('/api/posts', { method: 'POST', body: dto })
+    return request<PostDTO>('/api/posts', { method: 'POST', body: dto })
   },
 
   // 受保护：更新（slug 不可改，后端铁律；前端表单不提供 slug 字段）
   update(id: number, dto: UpdatePostDTO) {
-    return request<Post>(`/api/posts/${id}`, { method: 'PATCH', body: dto })
+    return request<PostDTO>(`/api/posts/${id}`, { method: 'PATCH', body: dto })
   },
 
   // 受保护：删除
@@ -242,19 +242,19 @@ export const postsApi = {
 ```ts
 // src/api/auth.api.ts
 import { request } from '@/lib/request'
-import type { User, LoginResult } from '@agentblog/shared'
-import { loginSchema, createUserSchema } from '@agentblog/shared'
+import type { UserDTO, LoginResultDTO } from '@agentblog/shared'
+import { loginSchema, registerSchema } from '@agentblog/shared'
 import type { z } from 'zod'
 
 export const authApi = {
   login(dto: z.infer<typeof loginSchema>) {
-    return request<LoginResult>('/api/auth/login', { method: 'POST', body: dto, public: true })
+    return request<LoginResultDTO>('/api/auth/login', { method: 'POST', body: dto, public: true })
   },
   me() {
-    return request<User>('/api/auth/me')
+    return request<UserDTO>('/api/auth/me')
   },
-  register(dto: z.infer<typeof createUserSchema>) {
-    return request<User>('/api/auth/register', { method: 'POST', body: dto })
+  register(dto: z.infer<typeof registerSchema>) {
+    return request<UserDTO>('/api/auth/register', { method: 'POST', body: dto, public: true })
   },
 }
 ```

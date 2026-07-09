@@ -11,35 +11,13 @@
  * @agentblog/shared 引入，不重复定义。
  */
 import { z } from 'zod'
-import { PostStatus, AuthorType } from '@agentblog/shared'
-
-/** 创建文章（🔴 无 slug 字段；published 时由 service 生成） */
-export const createPostSchema = z.object({
-  title: z.string().min(1, { error: '标题不能为空' }),
-  summary: z.string().optional(),
-  content: z.string().min(1, { error: '正文不能为空' }),
-  coverUrl: z.string().url({ error: '封面地址格式不正确' }).optional(),
-  status: z.enum([PostStatus.DRAFT, PostStatus.PUBLISHED]).default(PostStatus.DRAFT),
-  tagIds: z.array(z.number().int().positive()).default([]),
-})
-export type CreatePostDTO = z.infer<typeof createPostSchema>
-
-/**
- * 更新文章（🔴 无 slug 字段——从源头拒绝外部修改 slug）
- *
- * 注意：用 createPostSchema.partial() 会让带 default 的 status/tagIds 变成 optional，
- * 但会保留 default 语义导致「不传 status 时默认 draft」的错误行为。
- * 因此这里**手写** updatePostSchema，每个字段显式 optional，不继承 default。
- */
-export const updatePostSchema = z.object({
-  title: z.string().min(1).optional(),
-  summary: z.string().optional(),
-  content: z.string().min(1).optional(),
-  coverUrl: z.string().url().optional(),
-  status: z.enum([PostStatus.DRAFT, PostStatus.PUBLISHED]).optional(),
-  tagIds: z.array(z.number().int().positive()).optional(),
-})
-export type UpdatePostDTO = z.infer<typeof updatePostSchema>
+import { AuthorType, PostStatus } from '@agentblog/shared'
+export {
+  createPostSchema,
+  updatePostSchema,
+  type CreatePostDTO,
+  type UpdatePostDTO,
+} from '@agentblog/shared'
 
 /** 列表查询参数（GET /api/posts） */
 export const listPostsQuerySchema = z.object({
