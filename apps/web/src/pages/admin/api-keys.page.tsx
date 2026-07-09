@@ -53,14 +53,15 @@ export default function AdminApiKeysPage() {
   if (!agent) {
     return (
       <section className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-        <div>
-          <h1 className="text-2xl font-semibold">API Key</h1>
-          <p className="text-sm text-muted-foreground">
+        <section className="page-hero space-y-3">
+          <span className="eyebrow">Access Keys</span>
+          <h1 className="text-3xl font-semibold tracking-tight text-primary">API Key</h1>
+          <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
             API Key 归属于你的 Agent。请先创建 Agent，再回来签发 Key。
           </p>
-        </div>
+        </section>
 
-        <div className="rounded-xl border bg-card p-5">
+        <div className="ui-panel p-5 sm:p-6">
           <Empty
             title="当前还没有可绑定的 Agent"
             description="按设计约束，每个用户最多 1 个 Agent，Key 也只会挂在这个 Agent 下。"
@@ -105,19 +106,43 @@ export default function AdminApiKeysPage() {
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold">API Key</h1>
-        <p className="text-sm text-muted-foreground">
-          为 Agent「{agent.name}」签发和吊销 API Key。明文只会在签发成功的那一刻展示一次。
-        </p>
-      </div>
+      <section className="page-hero flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="space-y-3">
+          <span className="eyebrow">Access Keys</span>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-semibold tracking-tight text-primary">API Key</h1>
+            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+              为 Agent「{agent.name}」签发和吊销 API Key。明文只会在签发成功的那一刻展示一次。
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <div className="ui-panel-soft min-w-[180px] rounded-[1.5rem] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary/70">
+              Bound Agent
+            </p>
+            <p className="mt-2 text-xl font-semibold text-primary">{agent.name}</p>
+            <p className="mt-1 text-sm text-muted-foreground">所有 Key 都归属该 Agent</p>
+          </div>
+          <div className="ui-panel-soft min-w-[180px] rounded-[1.5rem] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary/70">
+              Issued Keys
+            </p>
+            <p className="mt-2 text-xl font-semibold text-primary">
+              {apiKeysQuery.data?.length ?? 0}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">已签发列表中的 Key 数量</p>
+          </div>
+        </div>
+      </section>
 
       {issuedKey && (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-950">
+        <div className="ui-panel-soft p-5 text-emerald-950 sm:p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
               <p className="text-sm font-medium">新 Key 已签发，请立即复制保存。</p>
-              <div className="rounded-md bg-white px-3 py-3 font-mono text-sm shadow-sm">
+              <div className="field-surface rounded-2xl bg-white/90 px-4 py-3 font-mono text-sm shadow-sm">
                 {issuedKey.key}
               </div>
               <p className="text-xs text-emerald-800">
@@ -141,8 +166,8 @@ export default function AdminApiKeysPage() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
-        <div className="rounded-xl border bg-card p-5">
-          <h2 className="text-lg font-semibold">签发新 Key</h2>
+        <div className="ui-panel p-5 sm:p-6">
+          <h2 className="section-title w-fit border-none pb-0">签发新 Key</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             可选填写名称用于区分用途；真正的明文 key 不会进入持久化存储。
           </p>
@@ -154,10 +179,10 @@ export default function AdminApiKeysPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-5">
+        <div className="ui-panel p-5 sm:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold">已签发 Key</h2>
+              <h2 className="section-title w-fit border-none pb-0">已签发 Key</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 列表只展示前缀、状态和创建时间，不会返回明文。
               </p>
@@ -183,14 +208,14 @@ export default function AdminApiKeysPage() {
                 {apiKeysQuery.data.map((key) => (
                   <div
                     key={key.id}
-                    className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
+                    className="ui-panel-soft flex flex-col gap-3 rounded-[1.5rem] px-4 py-4 md:flex-row md:items-center md:justify-between"
                   >
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium">
                           {key.name || '未命名 Key'}
                         </span>
-                        <span className="rounded-full bg-secondary px-2 py-1 text-xs font-medium">
+                        <span className="ui-chip">
                           {key.status === ApiKeyStatus.ACTIVE ? '可用' : '已吊销'}
                         </span>
                       </div>

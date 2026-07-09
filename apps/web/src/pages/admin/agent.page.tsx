@@ -52,13 +52,38 @@ export default function AdminAgentPage() {
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">我的 Agent</h1>
-          <p className="text-sm text-muted-foreground">
-            每个用户最多维护 1 个 Agent，可在这里配置头像、系统提示词和运行状态。
-          </p>
+      <section className="page-hero flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="space-y-3">
+          <span className="eyebrow">Agent Studio</span>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-semibold tracking-tight text-primary">我的 Agent</h1>
+            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+              每个用户最多维护 1 个 Agent，可在这里配置头像、系统提示词和运行状态。
+            </p>
+          </div>
         </div>
+
+        <div className="flex flex-wrap gap-3">
+          <div className="ui-panel-soft min-w-[170px] rounded-[1.5rem] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary/70">
+              Agent Slot
+            </p>
+            <p className="mt-2 text-xl font-semibold text-primary">{agent ? '已占用' : '空闲'}</p>
+            <p className="mt-1 text-sm text-muted-foreground">每位用户最多 1 个</p>
+          </div>
+          <div className="ui-panel-soft min-w-[170px] rounded-[1.5rem] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary/70">
+              Runtime
+            </p>
+            <p className="mt-2 text-xl font-semibold text-primary">
+              {agent ? statusLabel(agent.status) : '未配置'}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">影响对话和 API Key 通道</p>
+          </div>
+        </div>
+      </section>
+
+      <div className="flex justify-end">
         {agent && (
           <Button asChild variant="outline">
             <Link to="/admin/agent/keys">管理 API Key</Link>
@@ -68,10 +93,10 @@ export default function AdminAgentPage() {
 
       {agent ? (
         <>
-          <div className="rounded-xl border bg-card p-5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="ui-panel p-5 sm:p-6">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-4">
-                <div className="flex size-16 items-center justify-center overflow-hidden rounded-full border bg-muted text-lg font-medium">
+                <div className="flex size-16 items-center justify-center overflow-hidden rounded-full border border-primary/15 bg-[rgba(255,255,255,0.72)] text-lg font-medium text-primary shadow-sm">
                   {agent.avatarUrl ? (
                     <img
                       src={agent.avatarUrl}
@@ -82,12 +107,10 @@ export default function AdminAgentPage() {
                     agent.name.slice(0, 1).toUpperCase()
                   )}
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-semibold">{agent.name}</h2>
-                    <span className="rounded-full bg-secondary px-2 py-1 text-xs font-medium">
-                      {statusLabel(agent.status)}
-                    </span>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-xl font-semibold text-foreground">{agent.name}</h2>
+                    <span className="ui-chip">{statusLabel(agent.status)}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     删除后，关联的 API Key 会一并失效；后续需要重新签发。
@@ -106,11 +129,13 @@ export default function AdminAgentPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border bg-card p-5">
-            <h2 className="text-lg font-semibold">编辑配置</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              这里修改的是当前 Agent 本身，不涉及 API Key 明文存储。
-            </p>
+          <div className="ui-panel p-5 sm:p-6">
+            <div className="space-y-2">
+              <h2 className="section-title w-fit border-none pb-0">编辑配置</h2>
+              <p className="text-sm text-muted-foreground">
+                这里修改的是当前 Agent 本身，不涉及 API Key 明文存储。
+              </p>
+            </div>
             <div className="mt-6">
               <AgentForm
                 initialValues={agent}
@@ -127,13 +152,13 @@ export default function AdminAgentPage() {
           </div>
         </>
       ) : (
-        <div className="rounded-xl border bg-card p-5">
+        <div className="ui-panel p-5 sm:p-6">
           <Empty
-            className="py-10"
+            className="border-none bg-transparent px-0 py-8 shadow-none"
             title="你还没有 Agent"
             description="创建后才能进入在线对话和 API Key 管理。"
           />
-          <div className="border-t pt-6">
+          <div className="mt-4 border-t border-primary/10 pt-6">
             <AgentForm
               submitLabel="创建 Agent"
               submitting={createAgent.isPending}

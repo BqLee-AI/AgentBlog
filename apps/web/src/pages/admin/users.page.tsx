@@ -67,12 +67,39 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold">用户管理</h1>
-        <p className="text-sm text-muted-foreground">
-          仅覆盖用户列表、角色调整与充值。管理员代建用户属于 `#43`，本次不纳入范围。
-        </p>
-      </div>
+      <section className="page-hero flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="space-y-3">
+          <span className="eyebrow">User Ops</span>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-semibold tracking-tight text-primary">用户管理</h1>
+            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+              统一处理角色、额度和流水入口，方便管理员从一个列表完成主要运营动作。
+            </p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            仅覆盖用户列表、角色调整与充值。管理员代建用户属于 `#43`，本次不纳入范围。
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="ui-panel-soft min-w-[180px] rounded-[1.5rem] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary/70">
+              Visible Users
+            </p>
+            <p className="mt-2 text-3xl font-semibold text-primary">{total}</p>
+            <p className="mt-1 text-sm text-muted-foreground">当前分页总用户数</p>
+          </div>
+          <div className="ui-panel-soft min-w-[180px] rounded-[1.5rem] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary/70">
+              Page Status
+            </p>
+            <p className="mt-2 text-3xl font-semibold text-primary">
+              {page}/{totalPages}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">每页 {pageSize} 位用户</p>
+          </div>
+        </div>
+      </section>
 
       {usersQuery.isLoading ? (
         <ListSkeleton rows={6} />
@@ -81,17 +108,33 @@ export default function AdminUsersPage() {
           message={usersQuery.error instanceof Error ? usersQuery.error.message : '加载用户列表失败'}
           onRetry={() => void usersQuery.refetch()}
         />
+      ) : users.length === 0 ? (
+        <div className="ui-panel-soft px-6 py-12 text-center text-sm text-muted-foreground">
+          当前没有可管理的用户数据。
+        </div>
       ) : (
-        <>
-          <div className="overflow-hidden rounded-lg border">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-muted/50 text-muted-foreground">
+        <section className="ui-panel space-y-5 p-5 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="section-title w-fit border-none pb-0">用户列表</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                支持直接查看额度流水、发起充值以及按权限调整角色。
+              </p>
+            </div>
+            <div className="ui-chip">
+              {usersQuery.isFetching ? '列表刷新中' : '列表已同步'}
+            </div>
+          </div>
+
+          <div className="data-table-shell">
+            <table className="data-table">
+              <thead>
                 <tr>
-                  <th className="px-4 py-3 font-medium">用户名</th>
-                  <th className="px-4 py-3 font-medium">角色</th>
-                  <th className="px-4 py-3 font-medium">额度</th>
-                  <th className="px-4 py-3 font-medium">状态</th>
-                  <th className="px-4 py-3 font-medium">操作</th>
+                  <th className="font-medium">用户名</th>
+                  <th className="font-medium">角色</th>
+                  <th className="font-medium">额度</th>
+                  <th className="font-medium">状态</th>
+                  <th className="font-medium">操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -99,16 +142,16 @@ export default function AdminUsersPage() {
                   const isSelf = item.id === currentUser?.id
 
                   return (
-                    <tr key={item.id} className="border-t align-top">
-                      <td className="px-4 py-3 font-medium">{item.username}</td>
-                      <td className="px-4 py-3">{item.role}</td>
-                      <td className="px-4 py-3">{item.credits}</td>
-                      <td className="px-4 py-3">{STATUS_LABELS[item.status]}</td>
-                      <td className="px-4 py-3">
+                    <tr key={item.id} className="align-top">
+                      <td className="font-medium text-foreground">{item.username}</td>
+                      <td>{item.role}</td>
+                      <td>{item.credits}</td>
+                      <td>{STATUS_LABELS[item.status]}</td>
+                      <td>
                         <div className="flex flex-wrap gap-2">
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => openRechargeEditor(item)}
                           >
@@ -133,7 +176,7 @@ export default function AdminUsersPage() {
                                 改角色
                               </Button>
                             ) : (
-                              <span className="px-2 py-1 text-xs text-muted-foreground">
+                              <span className="ui-chip text-xs text-muted-foreground">
                                 不能修改自己
                               </span>
                             )}
@@ -147,7 +190,7 @@ export default function AdminUsersPage() {
             </table>
           </div>
 
-          <div className="flex items-center justify-between gap-3">
+          <div className="ui-panel-soft flex flex-col gap-3 rounded-[1.5rem] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">
               第 {page} / {totalPages} 页，共 {total} 位用户
               {usersQuery.isFetching ? '，刷新中…' : ''}
@@ -171,7 +214,7 @@ export default function AdminUsersPage() {
               </Button>
             </div>
           </div>
-        </>
+        </section>
       )}
 
       {rechargeTarget && (

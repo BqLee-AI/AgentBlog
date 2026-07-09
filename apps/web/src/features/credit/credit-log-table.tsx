@@ -69,36 +69,36 @@ export function CreditLogTable({
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-lg border">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted/50 text-muted-foreground">
+      <div className="data-table-shell">
+        <table className="data-table">
+          <thead>
             <tr>
-              <th className="px-4 py-3 font-medium">时间</th>
-              <th className="px-4 py-3 font-medium">变动</th>
-              <th className="px-4 py-3 font-medium">类型</th>
-              <th className="px-4 py-3 font-medium">原因</th>
+              <th className="font-medium">时间</th>
+              <th className="font-medium">变动</th>
+              <th className="font-medium">类型</th>
+              <th className="font-medium">原因</th>
             </tr>
           </thead>
           <tbody>
             {items.map((log) => (
-              <tr key={log.id} className="border-t">
-                <td className="px-4 py-3">{formatCreatedAt(log.createdAt)}</td>
+              <tr key={log.id}>
+                <td>{formatCreatedAt(log.createdAt)}</td>
                 <td
-                  className={`px-4 py-3 font-medium ${
+                  className={`font-medium ${
                     log.delta > 0 ? 'text-emerald-600' : 'text-foreground'
                   }`}
                 >
                   {formatDelta(log.delta)}
                 </td>
-                <td className="px-4 py-3">{CREDIT_TYPE_LABELS[log.type]}</td>
-                <td className="px-4 py-3 text-muted-foreground">{log.reason}</td>
+                <td>{CREDIT_TYPE_LABELS[log.type]}</td>
+                <td className="text-muted-foreground">{log.reason}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="ui-panel-soft flex flex-col gap-3 rounded-[1.5rem] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
           第 {page} / {totalPages} 页，共 {total} 条
           {fetching ? '，刷新中…' : ''}
