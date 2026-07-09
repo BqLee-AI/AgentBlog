@@ -199,12 +199,12 @@ function handleSideEffects(err: ApiError) {
 ```ts
 // src/api/posts.api.ts
 import { request } from '@/lib/request'
-import type { PostDTO, PaginatedDTO, ListPostsQuery } from '@agentblog/shared'
+import type { ListPostsQuery, PaginatedDTO, PostWithAuthorDTO } from '@agentblog/shared'
 
 export const postsApi = {
   // 公开：列表（仅 published）
   listPublic(query: ListPostsQuery, signal?: AbortSignal) {
-    return request<PaginatedDTO<PostDTO>>('/api/posts', {
+    return request<PaginatedDTO<PostWithAuthorDTO>>('/api/posts', {
       method: 'GET',
       query: { ...query },
       signal,
@@ -214,22 +214,22 @@ export const postsApi = {
 
   // 公开：详情（按 slug）
   getBySlug(slug: string, signal?: AbortSignal) {
-    return request<PostDTO>(`/api/posts/${encodeURIComponent(slug)}`, { signal, public: true })
+    return request<PostWithAuthorDTO>(`/api/posts/${encodeURIComponent(slug)}`, { signal, public: true })
   },
 
   // 受保护：按 id 取（后台编辑，含草稿）
   getByIdForEdit(id: number, signal?: AbortSignal) {
-    return request<PostDTO>(`/api/posts/by-id/${id}`, { signal })
+    return request<PostWithAuthorDTO>(`/api/posts/by-id/${id}`, { signal })
   },
 
   // 受保护：创建
   create(dto: CreatePostDTO) {
-    return request<PostDTO>('/api/posts', { method: 'POST', body: dto })
+    return request<PostWithAuthorDTO>('/api/posts', { method: 'POST', body: dto })
   },
 
   // 受保护：更新（slug 不可改，后端铁律；前端表单不提供 slug 字段）
   update(id: number, dto: UpdatePostDTO) {
-    return request<PostDTO>(`/api/posts/${id}`, { method: 'PATCH', body: dto })
+    return request<PostWithAuthorDTO>(`/api/posts/${id}`, { method: 'PATCH', body: dto })
   },
 
   // 受保护：删除
