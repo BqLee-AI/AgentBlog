@@ -1,0 +1,30 @@
+# AgentBlog 后端 Docker Compose（详见 docs/design/14 §4.2）
+#
+# 用法：
+#   1. cp apps/api/.env.example apps/api/.env.production，改 JWT_SECRET/密码/OPENAI_API_KEY
+#   2. docker compose up -d
+#   3. 首次部署：docker compose exec api bun run db:seed（创建超管 + 示例标签）
+#   4. curl http://localhost:3000/health 验证
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    volumes:
+      # SQLite 与上传文件持久化（容器重建不丢数据）
+      - api-data:/app/apps/api/data
+      # 生产环境配置（只读挂载）
+      - ./apps/api/.env.production:/app/apps/api/.env:ro
+    restart: unless-stopped
+    healthcheck:
+      # oven/bun 镜像无 curl，用 bun 跑 fetch
+      test: ['CMD', 'bun', '-e', "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  api-data:
