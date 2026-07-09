@@ -3,7 +3,7 @@
  *
  * useAuth：组件内读 token/user/status。
  * AuthProvider：应用启动时若有 token 则调 /auth/me 校验，驱动 status 流转：
- *   idle（有 token）→ loading → authenticated / unauthenticated
+ *   idle（有 token）→ loading → authenticated / unauthenticated / error
  *
  * 守卫（#5）消费 status：loading 显示 Spin，unauthenticated 跳登录。
  */
@@ -22,13 +22,20 @@ export function useAuth() {
 // ── Provider：启动校验 token ──
 export function AuthProvider({ children }: { children: ReactNode }) {
   const token = useAuthStore((s) => s.token)
+  const status = useAuthStore((s) => s.status)
 
   useEffect(() => {
     // 无 token：直接置 unauthenticated（AuthProvider 仍渲染 children，守卫负责跳转）
     if (!token) {
-      if (authStore.getState().status === 'idle') {
+      if (status !== 'unauthenticated') {
         authStore.setState({ status: 'unauthenticated' })
       }
+      return
+    }
+
+    // 有 token 但不处于可启动校验态时，不重复打 /auth/me。
+    // authenticated 代表已校验通过；loading 代表当前请求中；error 由守卫层提供重试入口。
+    if (status !== 'idle') {
       return
     }
 
@@ -49,17 +56,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // 401：request() 已处理（clear token + 清缓存 + 跳登录），status 已置 unauthenticated，无需再动
         if (err instanceof ApiError && err.isUnauthorized) return
 
-        // 非 401（网络错误 / 5xx 等）：不丢 token，仅回退 status。
-        // token 可能仍有效（7d），守卫会跳登录，但用户重新进入页面时可凭 sessionStorage 的 token 重试，
-        // 避免瞬态故障强制登出。
-        authStore.setState({ status: 'unauthenticated' })
+        // 非 401（网络错误 / 5xx 等）：不丢 token，进入可重试错误态。
+        // 避免把瞬态故障伪装成“未登录”，也避免 /login 与受保护页之间的循环跳转。
+        authStore.setState({ status: 'error' })
       })
 
     return () => {
       cancelled = true
     }
-    // 仅在 token 变化时重新校验（登录/登出切换）
-  }, [token])
+    // token 变化会切换登录态；status=idle 时可由守卫层显式触发重试。
+  }, [token, status])
 
   // loading 时仍渲染子树：守卫层会显示 Spin；避免整树延后挂载
   return <>{children}</>

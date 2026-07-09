@@ -16,21 +16,27 @@ import { LoginForm } from '@/features/auth/login-form'
 import { authApi } from '@/api/auth.api'
 import type { LoginDTO } from '@agentblog/shared'
 import { useAuthStore } from '@/lib/auth-store'
+import { Spin } from '@/components/feedback/spin'
 
 export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const token = useAuthStore((s) => s.token)
+  const status = useAuthStore((s) => s.status)
   const setAuth = useAuthStore((s) => s.setAuth)
 
   // 顶部全局错误（非字段级）：401 凭证错、网络错误等
   const [globalError, setGlobalError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  // 已登录访问 /login → 直接进后台
-  if (token) {
+  // 已明确认证访问 /login → 直接回跳；仅有 token 但仍在校验时先等待，避免 /login 回跳循环
+  if (status === 'authenticated') {
     const from = (location.state as { from?: Location } | null)?.from?.pathname ?? '/admin'
     return <Navigate to={from} replace />
+  }
+
+  if (token && (status === 'idle' || status === 'loading')) {
+    return <Spin fullscreen tip="正在验证登录…" />
   }
 
   const onSubmit = async (values: LoginDTO) => {
