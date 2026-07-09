@@ -27,7 +27,9 @@ export interface AuthVars {
 
 // Hono 类型增强：让 c.var.user 在 TS 里有类型
 declare module 'hono' {
-  interface ContextVariableMap extends AuthVars {}
+  interface ContextVariableMap {
+    user: AuthVars['user']
+  }
 }
 
 /** 解析 Bearer token → 校验 → 实时查用户 → 注入 c.var.user */

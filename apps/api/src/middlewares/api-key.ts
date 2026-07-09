@@ -20,7 +20,11 @@ export interface ApiKeyVars {
 
 // Hono 类型增强：让 c.var.apiKeyUser/apiKeyAgent/apiKeyId 在 TS 里有类型
 declare module 'hono' {
-  interface ContextVariableMap extends ApiKeyVars {}
+  interface ContextVariableMap {
+    apiKeyUser: ApiKeyVars['apiKeyUser']
+    apiKeyAgent: ApiKeyVars['apiKeyAgent']
+    apiKeyId: ApiKeyVars['apiKeyId']
+  }
 }
 
 /** 解析 X-API-Key → validate → 注入 c.var.apiKeyUser/apiKeyAgent/apiKeyId */
