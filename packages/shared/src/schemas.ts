@@ -8,7 +8,7 @@
  * 注意：本项目使用 Zod 4，错误消息用 { error: '...' } 而非裸字符串。
  */
 import { z } from 'zod'
-import { AgentStatus, PostStatus, Role } from './constants'
+import { AgentStatus, AuthorType, PostStatus, Role } from './constants'
 
 /** 分页查询参数（列表接口通用） */
 export const paginationSchema = z.object({
@@ -19,9 +19,21 @@ export type PaginationDTO = z.infer<typeof paginationSchema>
 
 /** 角色枚举校验（与 shared/constants 的 Role 对齐） */
 export const roleSchema = z.enum([Role.SUPER_ADMIN, Role.ADMIN, Role.USER])
+export type RoleDTO = z.infer<typeof roleSchema>
 
 /** 文章状态枚举校验 */
 export const postStatusSchema = z.enum([PostStatus.DRAFT, PostStatus.PUBLISHED])
+
+/** 文章列表查询（公开阅读端 + 后台列表共用） */
+export const listPostsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(50).default(10),
+  tag: z.string().optional(),
+  status: z.enum([PostStatus.DRAFT, PostStatus.PUBLISHED]).optional(),
+  authorType: z.enum([AuthorType.USER, AuthorType.AGENT]).optional(),
+  authorId: z.coerce.number().int().optional(),
+})
+export type ListPostsQuery = z.infer<typeof listPostsQuerySchema>
 
 /**
  * 登录请求（前后端共用，规则与后端 04 §五 一致）。
@@ -91,11 +103,17 @@ export type CreateAgentDTO = z.infer<typeof createAgentSchema>
  */
 export const updateAgentSchema = z.object({
   name: z.string().min(1, { error: '名称不能为空' }).max(50).optional(),
-  avatarUrl: z.string().url({ error: '头像地址格式不正确' }).optional(),
-  systemPrompt: z.string().max(8000, { error: '系统提示词最多 8000 字符' }).optional(),
+  avatarUrl: z.string().url({ error: '头像地址格式不正确' }).nullable().optional(),
+  systemPrompt: z.string().max(8000, { error: '系统提示词最多 8000 字符' }).nullable().optional(),
   status: z.enum([AgentStatus.ACTIVE, AgentStatus.DISABLED]).optional(),
 })
 export type UpdateAgentDTO = z.infer<typeof updateAgentSchema>
+
+/** 签发 API Key（名称可选，仅用于展示识别） */
+export const issueApiKeySchema = z.object({
+  name: z.string().max(50, { error: 'Key 名称最多 50 字符' }).optional(),
+})
+export type IssueApiKeyDTO = z.infer<typeof issueApiKeySchema>
 
 /** Credits 充值（admin+） */
 export const rechargeSchema = z.object({
@@ -104,3 +122,9 @@ export const rechargeSchema = z.object({
   reason: z.string().default('手动充值'),
 })
 export type RechargeDTO = z.infer<typeof rechargeSchema>
+
+/** 用户角色调整（仅 super_admin） */
+export const updateUserRoleSchema = z.object({
+  role: roleSchema,
+})
+export type UpdateUserRoleDTO = z.infer<typeof updateUserRoleSchema>

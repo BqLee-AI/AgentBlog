@@ -18,7 +18,7 @@ import { Hono } from 'hono'
 import { createPostSchema, updatePostSchema } from '@agentblog/shared'
 import { ok } from '@/lib/response'
 import { zodCheck } from '@/lib/zod-check'
-import { authMiddleware } from '@/middlewares/auth'
+import { authMiddleware, maybeAuth } from '@/middlewares/auth'
 import { postService } from '@/modules/post/post.service'
 import { listPostsQuerySchema } from '@/modules/post/post.schema'
 import { withAuthor } from '@/modules/post/post.author'
@@ -28,7 +28,9 @@ export const postsRoutes = new Hono()
 // ── 公开：列表（仅 published）──
 postsRoutes.get('/', zodCheck('query', listPostsQuerySchema), async (c) => {
   const query = c.req.valid('query')
-  const result = await postService.list(query, true) // isPublicView=true 强制 published
+  await maybeAuth(c, async () => {})
+  const actor = c.var.user as typeof c.var.user | undefined
+  const result = await postService.list(query, !actor, actor)
   const items = await Promise.all(result.items.map(async (p) => ({ ...p, author: await withAuthor(p) })))
   return ok(c, { ...result, items })
 })

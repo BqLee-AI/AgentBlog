@@ -14,15 +14,12 @@ import { db } from '@/db/client'
 import { apiKeys, agents, users } from '@/db/schema'
 import { HttpError } from '@/lib/errors'
 import { generateApiKey, hashApiKey, keyPrefix } from '@/lib/crypto'
-import type { ApiKeyDTO, ApiKeyStatus, Actor } from '@agentblog/shared'
-
-/** 签发响应（🔴 明文 key 仅此返回一次） */
-export interface IssueResult {
-  id: number
-  key: string // 明文，仅签发时返回
-  keyPrefix: string
-  name: string | null
-}
+import type {
+  ApiKeyDTO,
+  ApiKeyStatus,
+  Actor,
+  IssueApiKeyResultDTO,
+} from '@agentblog/shared'
 
 /** validate 返回的归属信息（供 apiKeyMiddleware 注入 c.var） */
 export interface ValidateResult {
@@ -75,7 +72,7 @@ export const apiKeyService = {
    * 签发新 Key（🔴 明文仅返回一次）。
    * 校验 Agent 归属后生成 key → hash → 存 hash + prefix → 返回明文。
    */
-  async issue(agentId: number, name: string | null, actor: Actor): Promise<IssueResult> {
+  async issue(agentId: number, name: string | null, actor: Actor): Promise<IssueApiKeyResultDTO> {
     // 校验 Agent 存在 + 归属
     const [agent] = await db.select().from(agents).where(eq(agents.id, agentId)).limit(1)
     if (!agent) {
@@ -127,7 +124,7 @@ export const apiKeyService = {
 
   /**
    * MCP 鉴权用：按明文 key 查有效 Key 及其归属用户（供 apiKeyMiddleware 复用）。
-   * 任一环节缺失或 status 非-active → 返回 null（中间件统一抛 401）。
+   * 任一环节缺失或 key/user/agent 任一状态非-active → 返回 null（中间件统一抛 401）。
    */
   async validate(plainKey: string): Promise<ValidateResult | null> {
     const hash = hashApiKey(plainKey)
@@ -135,10 +132,10 @@ export const apiKeyService = {
     if (!key || key.status !== 'active') return null
 
     const [agent] = await db.select().from(agents).where(eq(agents.id, key.agentId)).limit(1)
-    if (!agent) return null
+    if (!agent || agent.status !== 'active') return null
 
     const [user] = await db.select().from(users).where(eq(users.id, agent.userId)).limit(1)
-    if (!user) return null
+    if (!user || user.status !== 'active') return null
 
     return {
       user: { id: user.id, username: user.username, credits: user.credits },

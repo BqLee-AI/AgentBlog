@@ -90,18 +90,16 @@ export function postTools(ctx: ToolContext) {
         // 🔴 MCP list_posts 永远只返回 published（强制 isPublicView=true），
         //    不暴露 status 过滤——否则 agent 能经 status=draft 窥探全库他人草稿（信息泄露）。
         //    agent 要管理自己的草稿用 get_post（by id，但草稿不可读）/ update / delete。
-        const result = await postService.list(
-          {
-            page: Math.floor(args.offset / args.limit) + 1,
-            pageSize: args.limit,
-            tag: args.tag,
-            status: 'published',
-            authorType: undefined,
-            authorId: undefined,
-          },
-          true, // 强制公开视图
+        const result = await postRepository.listWindow({
+          offset: args.offset,
+          limit: args.limit,
+          tag: args.tag,
+          status: 'published',
+        })
+        const items = await Promise.all(
+          result.items.map(async (post) => ({ ...post, tags: await postRepository.getTags(post.id) })),
         )
-        return { items: result.items, total: result.total }
+        return { items, total: result.total }
       },
     },
 

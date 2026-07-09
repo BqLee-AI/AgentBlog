@@ -18,7 +18,7 @@ export default function AdminLayout() {
       <header className="flex h-14 items-center justify-between border-b px-4">
         <span className="font-semibold">AgentBlog 管理后台</span>
         <span className="text-sm text-muted-foreground">
-          {user ? `${user.username}（${user.role}）` : ''}
+          {user ? `${user.username}（${user.role}） · ${user.credits} credits` : ''}
         </span>
       </header>
 

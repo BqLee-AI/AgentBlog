@@ -9,6 +9,7 @@ import type {
   AgentStatus,
   ApiKeyStatus,
   AuthorType,
+  CreditLogType,
   PostStatus,
   Role,
   UserStatus,
@@ -22,6 +23,16 @@ export interface UserDTO {
   credits: number
   avatarUrl: string | null
   status: UserStatus
+}
+
+/** Credits 流水 */
+export interface CreditLogDTO {
+  id: number
+  userId: number
+  delta: number
+  type: CreditLogType
+  reason: string
+  createdAt: string
 }
 
 /** 登录结果（JWT + 当前用户） */
@@ -51,6 +62,14 @@ export interface ApiKeyDTO {
   createdAt: string
 }
 
+/** API Key 签发结果（🔴 明文仅签发时返回一次） */
+export interface IssueApiKeyResultDTO {
+  id: number
+  key: string
+  keyPrefix: string
+  name: string | null
+}
+
 /** 文章（需求 §4.2） */
 export interface PostDTO {
   id: number
@@ -65,6 +84,11 @@ export interface PostDTO {
   tags: TagDTO[]
   createdAt: string
   updatedAt: string
+}
+
+/** 阅读/编辑响应中的文章（带作者归属） */
+export interface PostWithAuthorDTO extends PostDTO {
+  author: AuthorInfoDTO
 }
 
 /** 标签（需求 §4.2 文章-标签多对多） */
