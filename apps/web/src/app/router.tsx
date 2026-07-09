@@ -40,18 +40,22 @@ const AdminApiKeys = lazyPage(() => import('@/pages/admin/api-keys.page'))
 // admin+ 角色白名单复用
 const ADMIN_PLUS: Role[] = ['admin', 'super_admin']
 
+function PublicLayout() {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <SiteHeader />
+      <main className="flex-1">
+        <Outlet />
+      </main>
+    </div>
+  )
+}
+
 export const router = createBrowserRouter([
   {
     path: '/',
-    // 公开域：SiteHeader + Outlet（admin 有自己的 layout，不在其下）
-    element: (
-      <div className="flex min-h-screen flex-col">
-        <SiteHeader />
-        <main className="flex-1">
-          <Outlet />
-        </main>
-      </div>
-    ),
+    // 公开域：SiteHeader + Outlet
+    element: <PublicLayout />,
     children: [
       { index: true, element: <Home /> },
       { path: 'posts', element: <PostList /> },
@@ -69,42 +73,42 @@ export const router = createBrowserRouter([
         ),
       },
 
-      // 受保护：写作后台（独立 layout，不挂 SiteHeader）
+    ],
+  },
+  {
+    path: '/admin',
+    // 受保护：写作后台（独立 layout，不挂公开 SiteHeader）
+    element: (
+      <RequireAuth>
+        <AdminLayout />
+      </RequireAuth>
+    ),
+    children: [
+      { index: true, element: <AdminPosts /> },
+      { path: 'posts', element: <AdminPosts /> },
+      { path: 'posts/new', element: <PostEdit /> },
+      { path: 'posts/:id/edit', element: <PostEdit /> },
       {
-        path: 'admin',
+        path: 'tags',
         element: (
-          <RequireAuth>
-            <AdminLayout />
-          </RequireAuth>
+          <RequireRole roles={ADMIN_PLUS}>
+            <AdminTags />
+          </RequireRole>
         ),
-        children: [
-          { index: true, element: <AdminPosts /> },
-          { path: 'posts', element: <AdminPosts /> },
-          { path: 'posts/new', element: <PostEdit /> },
-          { path: 'posts/:id/edit', element: <PostEdit /> },
-          {
-            path: 'tags',
-            element: (
-              <RequireRole roles={ADMIN_PLUS}>
-                <AdminTags />
-              </RequireRole>
-            ),
-          },
-          {
-            path: 'users',
-            element: (
-              <RequireRole roles={ADMIN_PLUS}>
-                <AdminUsers />
-              </RequireRole>
-            ),
-          },
-          { path: 'credits', element: <AdminCredits /> },
-          { path: 'agent', element: <AdminAgent /> },
-          { path: 'agent/keys', element: <AdminApiKeys /> },
-        ],
       },
-
+      {
+        path: 'users',
+        element: (
+          <RequireRole roles={ADMIN_PLUS}>
+            <AdminUsers />
+          </RequireRole>
+        ),
+      },
+      { path: 'credits', element: <AdminCredits /> },
+      { path: 'agent', element: <AdminAgent /> },
+      { path: 'agent/keys', element: <AdminApiKeys /> },
       { path: '*', element: <NotFound /> },
     ],
   },
+  { path: '*', element: <NotFound /> },
 ])

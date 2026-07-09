@@ -11,7 +11,7 @@ const TOKEN_KEY = 'agentblog_token'
 // 📌 sessionStorage：刷新不丢，关闭标签页即清（后端 04 §四建议，避免 localStorage）
 const TOKEN_STORAGE = typeof window !== 'undefined' ? sessionStorage : null
 
-export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'unauthenticated'
+export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'unauthenticated' | 'error'
 
 interface AuthState {
   token: string | null
