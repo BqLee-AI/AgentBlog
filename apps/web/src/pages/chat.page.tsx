@@ -8,9 +8,9 @@ export default function ChatPage() {
   const { messages, status, errorMessage, canRetry, input, handleInputChange, handleSubmit, retry, stop } = useAgentChat()
 
   return (
-    <section className="container mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-5xl flex-col px-4 py-6">
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card shadow-sm">
-        <div className="flex flex-col gap-4 border-b px-4 py-4 sm:flex-row sm:items-end sm:justify-between">
+    <section className="page-shell flex min-h-0 flex-1 max-w-5xl flex-col">
+      <div className="ui-panel flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="flex flex-col gap-4 border-b border-primary/10 px-5 py-5 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-1">
             <h1 className="text-xl font-semibold tracking-tight">与我的 Agent 对话</h1>
             <p className="text-sm text-muted-foreground">
@@ -18,7 +18,7 @@ export default function ChatPage() {
             </p>
           </div>
 
-          <div className="rounded-xl border bg-muted/30 px-4 py-3 text-sm">
+          <div className="ui-panel-soft rounded-[1.25rem] px-4 py-3 text-sm">
             <p className="text-muted-foreground">当前额度</p>
             <p className="mt-1 text-lg font-semibold">{user?.credits ?? '-'}</p>
           </div>
