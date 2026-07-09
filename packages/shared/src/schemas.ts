@@ -83,8 +83,18 @@ export const createAgentSchema = z.object({
 })
 export type CreateAgentDTO = z.infer<typeof createAgentSchema>
 
-/** 更新 Agent（所有字段可选） */
-export const updateAgentSchema = createAgentSchema.partial()
+/**
+ * 更新 Agent（所有字段可选）
+ *
+ * 注意：不能直接用 createAgentSchema.partial()，否则 status 的 default 会泄漏到更新场景，
+ * 导致未传 status 的 PATCH 也被解析成 { status: 'active' }。
+ */
+export const updateAgentSchema = z.object({
+  name: z.string().min(1, { error: '名称不能为空' }).max(50).optional(),
+  avatarUrl: z.string().url({ error: '头像地址格式不正确' }).optional(),
+  systemPrompt: z.string().max(8000, { error: '系统提示词最多 8000 字符' }).optional(),
+  status: z.enum([AgentStatus.ACTIVE, AgentStatus.DISABLED]).optional(),
+})
 export type UpdateAgentDTO = z.infer<typeof updateAgentSchema>
 
 /** Credits 充值（admin+） */
