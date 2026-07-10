@@ -48,6 +48,7 @@ export function AdminSidebar() {
             <li key={item.to}>
               <NavLink
                 to={item.to}
+                end={item.to === '/admin/agent'}
                 className={({ isActive }) =>
                   cn(
                     'flex items-center gap-3 rounded-[1.2rem] border px-3 py-3 text-sm font-semibold transition-all',

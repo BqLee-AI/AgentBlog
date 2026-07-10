@@ -44,7 +44,7 @@ export default function AdminPostsPage() {
   function updateFilters(next: { page?: number; status?: 'draft' | 'published' | undefined }) {
     const nextParams = new URLSearchParams(searchParams)
     const nextPage = next.page ?? page
-    const nextStatus = next.status === undefined ? status : next.status
+    const nextStatus = Object.prototype.hasOwnProperty.call(next, 'status') ? next.status : status
 
     if (nextPage > 1) nextParams.set('page', String(nextPage))
     else nextParams.delete('page')
