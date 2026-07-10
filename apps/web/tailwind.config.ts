@@ -52,26 +52,9 @@ const config = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
-      boxShadow: {
-        card: 'var(--shadow-card)',
-        'teal-glow': 'var(--shadow-teal-glow)',
-        'accent-glow': 'var(--shadow-accent-glow)',
-        'coral-glow': 'var(--shadow-coral-glow)',
-      },
-      transitionTimingFunction: {
-        spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-      },
       fontFamily: {
-        sans: [
-          '"Avenir Next"',
-          '"Segoe UI"',
-          '"PingFang SC"',
-          '"Hiragino Sans GB"',
-          '"Microsoft YaHei"',
-          'ui-sans-serif',
-          'system-ui',
-          'sans-serif',
-        ],
+        sans: ['Manrope', 'system-ui', 'sans-serif'],
+        serif: ['"Noto Serif SC"', '"Songti SC"', '"Source Han Serif SC"', 'serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
     },

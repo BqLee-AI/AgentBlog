@@ -12,6 +12,7 @@
 import { lazy } from 'react'
 import { createBrowserRouter, Outlet } from 'react-router-dom'
 import { SiteHeader } from '@/components/layout/site-header'
+import { PublicParticleField } from '@/components/public/public-particle-field'
 import { RequireAuth } from '@/features/auth/require-auth'
 import { RequireRole } from '@/features/auth/require-role'
 import type { Role } from '@agentblog/shared'
@@ -42,11 +43,14 @@ const ADMIN_PLUS: Role[] = ['admin', 'super_admin']
 
 function PublicLayout() {
   return (
-    <div className="public-stage relative flex min-h-screen flex-col overflow-x-hidden">
-      <SiteHeader />
-      <main className="relative flex flex-1 flex-col pb-12">
-        <Outlet />
-      </main>
+    <div className="public-stage min-h-screen bg-background">
+      <PublicParticleField />
+      <div className="relative z-10 flex min-h-screen flex-col">
+        <SiteHeader />
+        <main className="flex-1 pb-12">
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }
