@@ -202,13 +202,14 @@ export function postTools(ctx: ToolContext) {
 }
 
 /**
- * 把 postTools(defs) 转成 AI SDK v4 的 tool 定义（供在线 Agent streamText 用，详见 docs/design/10 §4.1）。
+ * 把 postTools(defs) 转成 AI SDK v5 的 tool 定义（供在线 Agent streamText 用，详见 docs/design/10 §4.1）。
  *
- * ⚠️ zod 版本兼容（must-fix）：本仓用 zod@4，但 AI SDK v4 内部用 zod@3 的 zod-to-json-schema
- *    转换器，直接传 ZodObject 会生成 `type: null` 的 JSON Schema，被 OpenAI/DeepSeek 端点拒绝。
+ * ⚠️ zod 版本兼容：本仓用 zod@4，AI SDK 内部依赖 zod@3 的 zod-to-json-schema 转换器，
+ *    直接传 ZodObject 会生成 `type: null` 的 JSON Schema，被 OpenAI/DeepSeek 端点拒绝。
  *    解法：用 zod4 原生 z.toJSONSchema() 生成正确的 JSON Schema，再经 AI SDK 的 jsonSchema()
  *    包装（含运行时 validate 保留 refine 等校验语义），完全绕过 AI SDK 的 zod3 转换层。
  *
+ * 🔴 v5 把 tool() 的 schema 参数名从 parameters 改为 inputSchema（语义不变）。
  * 🔴 与 MCP 复用同一份 postTools 工具定义（需求 §4.6）；本函数只做格式转换，不含业务逻辑。
  */
 
@@ -230,27 +231,27 @@ export function toAiSdkTools(defs: ReturnType<typeof postTools>) {
   return {
     list_posts: aiTool({
       description: defs.list_posts.description,
-      parameters: toAiSchema(defs.list_posts.schema),
+      inputSchema: toAiSchema(defs.list_posts.schema),
       execute: defs.list_posts.handler,
     }),
     get_post: aiTool({
       description: defs.get_post.description,
-      parameters: toAiSchema(defs.get_post.schema),
+      inputSchema: toAiSchema(defs.get_post.schema),
       execute: defs.get_post.handler,
     }),
     create_post: aiTool({
       description: defs.create_post.description,
-      parameters: toAiSchema(defs.create_post.schema),
+      inputSchema: toAiSchema(defs.create_post.schema),
       execute: defs.create_post.handler,
     }),
     update_post: aiTool({
       description: defs.update_post.description,
-      parameters: toAiSchema(defs.update_post.schema),
+      inputSchema: toAiSchema(defs.update_post.schema),
       execute: defs.update_post.handler,
     }),
     delete_post: aiTool({
       description: defs.delete_post.description,
-      parameters: toAiSchema(defs.delete_post.schema),
+      inputSchema: toAiSchema(defs.delete_post.schema),
       execute: defs.delete_post.handler,
     }),
   }
