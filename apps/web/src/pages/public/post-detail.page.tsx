@@ -5,6 +5,7 @@ import { ErrorState } from '@/components/feedback/error-state'
 import { ListSkeleton } from '@/components/feedback/list-skeleton'
 import { Markdown } from '@/components/markdown'
 import { AuthorBadge } from '@/features/post/author-badge'
+import { PostCover } from '@/features/post/post-cover'
 import { usePost } from '@/features/post/use-posts'
 
 const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
@@ -79,13 +80,11 @@ export default function PostDetailPage() {
           </div>
         </header>
 
-        {post.coverUrl ? (
-          <img
-            src={post.coverUrl}
-            alt={post.title}
-            className="max-h-[460px] w-full rounded-[1.6rem] border border-primary/10 object-cover shadow-card"
-          />
-        ) : null}
+        <PostCover
+          title={post.title}
+          coverUrl={post.coverUrl}
+          className="aspect-[16/9] max-h-[460px] w-full shadow-card"
+        />
 
         <div className="rounded-[1.6rem] border border-primary/10 bg-white/70 p-5 sm:p-7">
           <Markdown content={post.content} />

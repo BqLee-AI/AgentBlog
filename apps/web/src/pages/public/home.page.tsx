@@ -1,11 +1,29 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, BookOpenText, Bot, Sparkles } from 'lucide-react'
+import { ArrowRight, BookOpenText, Bot, PenSquare, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Empty } from '@/components/feedback/empty'
 import { ErrorState } from '@/components/feedback/error-state'
 import { ListSkeleton } from '@/components/feedback/list-skeleton'
 import { PostList } from '@/features/post/post-list'
 import { usePostList } from '@/features/post/use-posts'
+
+const quickLinks = [
+  {
+    title: '公开阅读',
+    to: '/posts',
+    icon: BookOpenText,
+  },
+  {
+    title: 'Agent 写作',
+    to: '/admin',
+    icon: PenSquare,
+  },
+  {
+    title: '在线对话',
+    to: '/chat',
+    icon: Bot,
+  },
+] as const
 
 export default function HomePage() {
   const { data, isLoading, isError, error, refetch } = usePostList({
@@ -23,14 +41,7 @@ export default function HomePage() {
               <Sparkles className="h-3.5 w-3.5" />
               Public Reading
             </span>
-            <div className="space-y-3">
-              <h1 className="max-w-3xl text-4xl font-black tracking-tight text-foreground sm:text-5xl">
-                为 Agent 写作，也让人类读起来更舒服。
-              </h1>
-              <p className="max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-                AgentBlog 把公开阅读端、后台写作端和在线对话放进同一套界面语言里。你可以在这里浏览已发布文章、按标签筛选，并通过稳定 slug 进入详情页。
-              </p>
-            </div>
+            <h1 className="text-4xl font-black tracking-tight text-foreground sm:text-5xl">AgentBlog</h1>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg">
                 <Link to="/posts">
@@ -45,27 +56,24 @@ export default function HomePage() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="ui-panel-soft px-5 py-5">
-              <BookOpenText className="h-5 w-5 text-primary" />
-              <p className="mt-4 text-lg font-bold">公开阅读</p>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                最新文章、稳定链接、清晰的标签与作者归属。
-              </p>
-            </div>
-            <div className="ui-panel-soft px-5 py-5">
-              <Bot className="h-5 w-5 text-primary" />
-              <p className="mt-4 text-lg font-bold">Agent 写作</p>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                同一套后台工作台里管理文章、Agent 和 API Key。
-              </p>
-            </div>
-            <div className="ui-panel-soft px-5 py-5">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <p className="mt-4 text-lg font-bold">统一风格</p>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                teal / gold / coral 主题把前台与后台视觉收口到一起。
-              </p>
-            </div>
+            {quickLinks.map((item) => {
+              const Icon = item.icon
+
+              return (
+                <Link
+                  key={item.title}
+                  to={item.to}
+                  className="ui-panel-soft group block px-5 py-5 transition-all hover:-translate-y-1 hover:border-primary/24 hover:bg-white/90"
+                >
+                  <Icon className="h-5 w-5 text-primary" />
+                  <p className="mt-4 text-lg font-bold text-foreground">{item.title}</p>
+                  <span className="mt-4 inline-flex items-center text-sm font-medium text-primary">
+                    进入
+                    <ArrowRight className="ml-1.5 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -74,7 +82,6 @@ export default function HomePage() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="section-title text-2xl">最新文章</h2>
-            <p className="mt-3 text-sm text-muted-foreground">公开展示最近发布的内容。</p>
           </div>
           <Button variant="ghost" asChild>
             <Link to="/posts">查看全部</Link>

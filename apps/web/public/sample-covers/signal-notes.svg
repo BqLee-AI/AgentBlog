@@ -1,0 +1,21 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#F7EEE3"/>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1340" cy="190" r="170" fill="#F4AA86" fill-opacity="0.52"/>
+  <circle cx="380" cy="660" r="230" fill="#9FD9CF" fill-opacity="0.32"/>
+  <rect x="160" y="150" width="1280" height="600" rx="42" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.58)" stroke-width="2"/>
+  <path d="M250 295H945" stroke="rgba(255,255,255,0.62)" stroke-width="20" stroke-linecap="round"/>
+  <path d="M250 385H1210" stroke="rgba(255,255,255,0.48)" stroke-width="14" stroke-linecap="round"/>
+  <path d="M250 455H980" stroke="rgba(255,255,255,0.44)" stroke-width="14" stroke-linecap="round"/>
+  <path d="M250 525H1150" stroke="rgba(255,255,255,0.44)" stroke-width="14" stroke-linecap="round"/>
+  <rect x="1080" y="520" width="210" height="120" rx="26" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.46)" stroke-width="2"/>
+  <path d="M250 650C360 600 468 575 570 583C700 592 789 673 919 684C1038 694 1172 637 1320 518" stroke="rgba(31,58,66,0.18)" stroke-width="8" stroke-linecap="round"/>
+  <text x="250" y="235" fill="#3A5C61" fill-opacity="0.82" font-family="Georgia, serif" font-size="28" letter-spacing="7">AGENTBLOG</text>
+  <defs>
+    <linearGradient id="bg" x1="115" y1="118" x2="1470" y2="782" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF8EB"/>
+      <stop offset="0.5" stop-color="#E4F3EE"/>
+      <stop offset="1" stop-color="#F4C9B2"/>
+    </linearGradient>
+  </defs>
+</svg>

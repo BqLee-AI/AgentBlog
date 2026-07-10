@@ -33,11 +33,11 @@ export default function PostListPage() {
 
   const totalPages = postsQuery.data ? Math.max(1, Math.ceil(postsQuery.data.total / postsQuery.data.pageSize)) : 1
 
-  function updateFilters(next: { page?: number; tag?: string | undefined }) {
+  function updateFilters(next: { page?: number; tag?: string | null }) {
     const nextParams = new URLSearchParams(searchParams)
 
     const nextPage = next.page ?? page
-    const nextTag = next.tag === undefined ? tag : next.tag
+    const nextTag = Object.prototype.hasOwnProperty.call(next, 'tag') ? next.tag ?? undefined : tag
 
     if (nextPage > 1) nextParams.set('page', String(nextPage))
     else nextParams.delete('page')
@@ -53,9 +53,6 @@ export default function PostListPage() {
       <section className="page-hero space-y-3">
         <span className="eyebrow">Explore Posts</span>
         <h1 className="text-3xl font-black tracking-tight sm:text-4xl">文章列表</h1>
-        <p className="max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-          按标签筛选公开文章，使用稳定 slug 进入详情，并在同一套卡片语言下快速扫过标题、摘要和作者归属。
-        </p>
       </section>
 
       <section className="ui-panel p-5 sm:p-6">
@@ -73,7 +70,7 @@ export default function PostListPage() {
             <Button
               variant={!tag ? 'default' : 'outline'}
               size="sm"
-              onClick={() => updateFilters({ page: 1, tag: undefined })}
+              onClick={() => updateFilters({ page: 1, tag: null })}
             >
               全部
             </Button>
