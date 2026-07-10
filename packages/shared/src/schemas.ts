@@ -10,6 +10,26 @@
 import { z } from 'zod'
 import { AgentStatus, AuthorType, PostStatus, Role } from './constants'
 
+type UrlConstructor = {
+  new (url: string, base?: string): unknown
+}
+
+function isAssetUrl(value: string): boolean {
+  if (value.startsWith('/')) return value.length > 1
+  try {
+    const URLCtor = (globalThis as typeof globalThis & { URL?: UrlConstructor }).URL
+    if (!URLCtor) return false
+    new URLCtor(value)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function assetUrlSchema(error: string) {
+  return z.string().refine(isAssetUrl, { error })
+}
+
 /** 分页查询参数（列表接口通用） */
 export const paginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
@@ -59,7 +79,7 @@ export const createPostSchema = z.object({
   title: z.string().min(1, { error: '标题不能为空' }),
   summary: z.string().optional(),
   content: z.string().min(1, { error: '正文不能为空' }),
-  coverUrl: z.string().url({ error: '封面地址格式不正确' }).optional(),
+  coverUrl: assetUrlSchema('封面地址格式不正确').optional(),
   status: z.enum([PostStatus.DRAFT, PostStatus.PUBLISHED]).default(PostStatus.DRAFT),
   tagIds: z.array(z.number().int().positive()).default([]),
 })
@@ -74,7 +94,7 @@ export const updatePostSchema = z.object({
   title: z.string().min(1, { error: '标题不能为空' }).optional(),
   summary: z.string().optional(),
   content: z.string().min(1, { error: '正文不能为空' }).optional(),
-  coverUrl: z.string().url({ error: '封面地址格式不正确' }).optional(),
+  coverUrl: assetUrlSchema('封面地址格式不正确').optional(),
   status: z.enum([PostStatus.DRAFT, PostStatus.PUBLISHED]).optional(),
   tagIds: z.array(z.number().int().positive()).optional(),
 })
@@ -89,7 +109,7 @@ export type CreateTagDTO = z.infer<typeof createTagSchema>
 /** 创建 Agent */
 export const createAgentSchema = z.object({
   name: z.string().min(1, { error: '名称不能为空' }).max(50),
-  avatarUrl: z.string().url({ error: '头像地址格式不正确' }).optional(),
+  avatarUrl: assetUrlSchema('头像地址格式不正确').optional(),
   systemPrompt: z.string().max(8000, { error: '系统提示词最多 8000 字符' }).optional(),
   status: z.enum([AgentStatus.ACTIVE, AgentStatus.DISABLED]).default(AgentStatus.ACTIVE),
 })
@@ -103,7 +123,7 @@ export type CreateAgentDTO = z.infer<typeof createAgentSchema>
  */
 export const updateAgentSchema = z.object({
   name: z.string().min(1, { error: '名称不能为空' }).max(50).optional(),
-  avatarUrl: z.string().url({ error: '头像地址格式不正确' }).nullable().optional(),
+  avatarUrl: assetUrlSchema('头像地址格式不正确').nullable().optional(),
   systemPrompt: z.string().max(8000, { error: '系统提示词最多 8000 字符' }).nullable().optional(),
   status: z.enum([AgentStatus.ACTIVE, AgentStatus.DISABLED]).optional(),
 })
