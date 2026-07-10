@@ -7,7 +7,7 @@
  *
  * 守卫（#5）消费 status：loading 显示 Spin，unauthenticated 跳登录。
  */
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { useAuthStore, authStore } from '@/lib/auth-store'
 import { authApi } from '@/api/auth.api'
 import { ApiError } from '@/lib/http-error'
@@ -23,23 +23,33 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const token = useAuthStore((s) => s.token)
   const status = useAuthStore((s) => s.status)
+  const validatingTokenRef = useRef<string | null>(null)
 
   useEffect(() => {
     // 无 token：直接置 unauthenticated（AuthProvider 仍渲染 children，守卫负责跳转）
     if (!token) {
+      validatingTokenRef.current = null
       if (status !== 'unauthenticated') {
         authStore.setState({ status: 'unauthenticated' })
       }
       return
     }
 
-    // 有 token 但不处于可启动校验态时，不重复打 /auth/me。
-    // authenticated 代表已校验通过；loading 代表当前请求中；error 由守卫层提供重试入口。
-    if (status !== 'idle') {
+    // authenticated：已校验通过；error：守卫层会给 retry，把状态拨回 idle。
+    if (status === 'authenticated' || status === 'error') {
+      validatingTokenRef.current = null
+      return
+    }
+
+    // StrictMode 下 mount effect 会重放一次。若第一次 cleanup 先把请求标记取消，
+    // 第二次 effect 又因 status=loading 直接返回，就会卡在“正在验证登录…”。
+    // 用 ref 标记当前 token 的校验请求，避免真实重复请求，同时允许重放后重新启动。
+    if (validatingTokenRef.current === token) {
       return
     }
 
     // 有 token：idle → loading → 校验
+    validatingTokenRef.current = token
     authStore.setState({ status: 'loading' })
 
     let cancelled = false
@@ -60,9 +70,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // 避免把瞬态故障伪装成“未登录”，也避免 /login 与受保护页之间的循环跳转。
         authStore.setState({ status: 'error' })
       })
+      .finally(() => {
+        if (!cancelled && validatingTokenRef.current === token) {
+          validatingTokenRef.current = null
+        }
+      })
 
     return () => {
       cancelled = true
+      if (validatingTokenRef.current === token) {
+        validatingTokenRef.current = null
+      }
     }
     // token 变化会切换登录态；status=idle 时可由守卫层显式触发重试。
   }, [token, status])
