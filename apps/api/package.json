@@ -18,11 +18,12 @@
   },
   "dependencies": {
     "@agentblog/shared": "workspace:*",
-    "@ai-sdk/anthropic": "^1",
-    "@ai-sdk/openai": "^1",
+    "@ai-sdk/anthropic": "^2",
+    "@ai-sdk/openai": "^2",
+    "@ai-sdk/openai-compatible": "^1.0.42",
     "@hono/zod-validator": "^0.8.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "ai": "^4.3.19",
+    "ai": "^5",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.6.0",
     "zod": "^4.0.0"
