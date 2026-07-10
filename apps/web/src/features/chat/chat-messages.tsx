@@ -54,7 +54,7 @@ function ToolCallView({ part }: { part: ToolPart }) {
   const toolName = getToolName(part)
 
   return (
-    <div className="rounded-md border bg-background/80 p-3 text-xs text-foreground shadow-sm">
+    <div className="rounded-md border border-foreground/10 bg-secondary/60 p-3 text-xs text-foreground">
       <div className="flex items-center gap-2 text-muted-foreground">
         <Wrench className="size-3.5" />
         <span className="font-medium">{toolName}</span>
@@ -92,7 +92,7 @@ function ToolCallView({ part }: { part: ToolPart }) {
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-2 text-sm text-muted-foreground shadow-sm">
+      <div className="inline-flex items-center gap-2 rounded-md border border-foreground/10 bg-card px-3 py-2 text-sm text-muted-foreground">
         <Loader2 className="size-4 animate-spin" />
         Agent 正在回复…
       </div>
@@ -108,12 +108,11 @@ export function ChatMessages({ messages, status, errorMessage, canRetry, onRetry
   }, [messages, status, errorMessage])
 
   return (
-    <div className="flex-1 overflow-y-auto bg-muted/20 px-4 py-6">
+    <div className="flex-1 overflow-y-auto bg-secondary/30 px-4 py-6">
       {messages.length === 0 ? (
         <Empty
           className="min-h-full"
           title="开始和你的 Agent 对话"
-          description="可让它查询文章、执行工具；当前会话不会被保存。"
         />
       ) : (
         <div className="space-y-6">
@@ -134,7 +133,7 @@ export function ChatMessages({ messages, status, errorMessage, canRetry, onRetry
 
                 <div
                   className={cn(
-                    'space-y-3 rounded-2xl border px-4 py-3 shadow-sm',
+                    'space-y-3 rounded-lg border px-4 py-3',
                     message.role === 'user'
                       ? 'border-primary/20 bg-primary text-primary-foreground'
                       : 'bg-background',
@@ -163,7 +162,7 @@ export function ChatMessages({ messages, status, errorMessage, canRetry, onRetry
 
                     if (part.type === 'reasoning') {
                       return (
-                        <details key={`${message.id}-reasoning-${index}`} className="rounded-md border bg-muted/40 p-3 text-sm">
+                        <details key={`${message.id}-reasoning-${index}`} className="rounded-md border border-foreground/10 bg-secondary/60 p-3 text-sm">
                           <summary className="flex cursor-pointer items-center gap-2 text-muted-foreground">
                             <Sparkles className="size-4" />
                             推理过程

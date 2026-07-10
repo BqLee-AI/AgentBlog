@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { CalendarDays, FileText, Plus, Trash2 } from 'lucide-react'
+import { CalendarDays, Plus, Trash2 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Empty } from '@/components/feedback/empty'
 import { ErrorState } from '@/components/feedback/error-state'
@@ -66,9 +66,6 @@ export default function AdminPostsPage() {
         <div className="space-y-2">
           <span className="eyebrow">Editorial Workflow</span>
           <h1 className="text-2xl font-semibold tracking-tight">文章管理</h1>
-          <p className="text-sm text-muted-foreground">
-            创建、编辑和删除后台文章。草稿会保留在后台，公开页仍只认 slug。
-          </p>
         </div>
         <Button asChild>
           <Link to="/admin/posts/new">
@@ -109,7 +106,6 @@ export default function AdminPostsPage() {
       {!postsQuery.isLoading && !postsQuery.isError && postsQuery.data?.items.length === 0 ? (
         <Empty
           title="还没有文章"
-          description={status ? `当前筛选下没有${status === 'draft' ? '草稿' : '已发布'}文章。` : '先创建第一篇文章。'}
           action={(
             <Button asChild>
               <Link to="/admin/posts/new">去写文章</Link>
@@ -223,13 +219,6 @@ export default function AdminPostsPage() {
           </div>
         </section>
       ) : null}
-
-      <section className="soft-note p-4 text-sm text-muted-foreground">
-        <div className="flex items-start gap-3">
-          <FileText className="mt-0.5 h-4 w-4 shrink-0" />
-          <p>表单里不暴露 slug；草稿首次发布时由后端生成并永久固定。</p>
-        </div>
-      </section>
     </div>
   )
 }

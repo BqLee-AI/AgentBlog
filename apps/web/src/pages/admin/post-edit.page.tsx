@@ -122,9 +122,6 @@ export default function PostEditPage() {
         <h1 className="text-2xl font-semibold tracking-tight">
           {isEdit ? '编辑文章' : '新建文章'}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          标题、正文、封面和标签都直接写入文章契约；slug 不在表单里出现。
-        </p>
       </section>
 
       <Form {...form}>
@@ -273,7 +270,6 @@ export default function PostEditPage() {
                         ) : (
                           <Empty
                             title="暂无标签"
-                            description="先去标签管理页创建标签，再回来给文章打标。"
                             className="rounded-[1.25rem] py-8"
                           />
                         )}
@@ -290,9 +286,7 @@ export default function PostEditPage() {
               <div className="max-h-[420px] overflow-auto rounded-[1.25rem] border border-primary/10 bg-white/75 p-4">
                 {contentPreview ? (
                   <Markdown content={contentPreview} />
-                ) : (
-                  <p className="text-sm text-muted-foreground">正文内容会在这里实时预览。</p>
-                )}
+                ) : null}
               </div>
             </section>
           </aside>

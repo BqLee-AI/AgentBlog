@@ -1,3 +1,4 @@
+import { ParticleField } from '@/components/effects/particle-field'
 import { ChatInput } from '@/features/chat/chat-input'
 import { ChatMessages } from '@/features/chat/chat-messages'
 import { useAgentChat } from '@/features/chat/use-agent-chat'
@@ -8,38 +9,49 @@ export default function ChatPage() {
   const { messages, status, errorMessage, canRetry, input, handleInputChange, handleSubmit, retry, stop } = useAgentChat()
 
   return (
-    <section className="page-shell flex min-h-0 flex-1 max-w-5xl flex-col">
-      <div className="ui-panel flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="flex flex-col gap-4 border-b border-primary/10 px-5 py-5 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-xl font-semibold tracking-tight">与我的 Agent 对话</h1>
-            <p className="text-sm text-muted-foreground">
-              基于流式响应实时生成内容；工具调用结果会展示在消息中。
+    <section className="relative overflow-hidden">
+      <ParticleField />
+      <div className="public-shell relative flex min-h-[calc(100vh-9rem)] flex-col gap-8 py-12 sm:py-16">
+        <header className="max-w-2xl space-y-4">
+          <span className="eyebrow">Agent Chat</span>
+          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl">
+            与我的 Agent 对话
+          </h1>
+        </header>
+
+        <div className="signal-strip">
+          <div>
+            <p className="meta-kicker">Session</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {user ? `${user.username} · ${user.role}` : '未登录'}
             </p>
           </div>
-
-          <div className="ui-panel-soft rounded-[1.25rem] px-4 py-3 text-sm">
-            <p className="text-muted-foreground">当前额度</p>
-            <p className="mt-1 text-lg font-semibold">{user?.credits ?? '-'}</p>
+          <div className="flex items-baseline gap-2 text-sm text-muted-foreground">
+            <span className="meta-kicker">Credits</span>
+            <span className="text-2xl font-semibold tracking-tight text-foreground">
+              {user?.credits ?? '-'}
+            </span>
           </div>
         </div>
 
-        <ChatMessages
-          messages={messages}
-          status={status}
-          errorMessage={errorMessage}
-          canRetry={canRetry}
-          onRetry={retry}
-        />
+        <div className="editorial-card flex min-h-[560px] flex-1 flex-col overflow-hidden">
+          <ChatMessages
+            messages={messages}
+            status={status}
+            errorMessage={errorMessage}
+            canRetry={canRetry}
+            onRetry={retry}
+          />
 
-        <ChatInput
-          input={input}
-          onChange={handleInputChange}
-          onSubmit={handleSubmit}
-          onStop={stop}
-          disabled={status === 'submitted' || status === 'streaming'}
-          isStreaming={status === 'submitted' || status === 'streaming'}
-        />
+          <ChatInput
+            input={input}
+            onChange={handleInputChange}
+            onSubmit={handleSubmit}
+            onStop={stop}
+            disabled={status === 'submitted' || status === 'streaming'}
+            isStreaming={status === 'submitted' || status === 'streaming'}
+          />
+        </div>
       </div>
     </section>
   )
