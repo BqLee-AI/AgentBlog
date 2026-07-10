@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
-import { ChevronLeft, ChevronRight, Hash } from 'lucide-react'
-import { Link, useSearchParams } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
+
 import { Empty } from '@/components/feedback/empty'
 import { ErrorState } from '@/components/feedback/error-state'
 import { ListSkeleton } from '@/components/feedback/list-skeleton'
+import { PublicPill } from '@/components/public/primitives'
+import { Button } from '@/components/ui/button'
 import { PostList } from '@/features/post/post-list'
 import { usePostList } from '@/features/post/use-posts'
 import { useTags } from '@/features/tag/use-tags'
@@ -37,7 +39,9 @@ export default function PostListPage() {
     const nextParams = new URLSearchParams(searchParams)
 
     const nextPage = next.page ?? page
-    const nextTag = Object.prototype.hasOwnProperty.call(next, 'tag') ? next.tag ?? undefined : tag
+    const nextTag = Object.prototype.hasOwnProperty.call(next, 'tag')
+      ? next.tag ?? undefined
+      : tag
 
     if (nextPage > 1) nextParams.set('page', String(nextPage))
     else nextParams.delete('page')
@@ -49,67 +53,67 @@ export default function PostListPage() {
   }
 
   return (
-    <div className="page-shell space-y-8">
-      <section className="page-hero space-y-3">
-        <span className="eyebrow">Explore Posts</span>
-        <h1 className="text-3xl font-black tracking-tight sm:text-4xl">文章列表</h1>
-      </section>
+    <div className="public-shell space-y-12 py-16 sm:py-20">
+      <header className="max-w-2xl space-y-4">
+        <span className="eyebrow">Reading Archive</span>
+        <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl">
+          文章列表
+        </h1>
+      </header>
 
-      <section className="ui-panel p-5 sm:p-6">
-        <div className="section-title text-base">
-          <Hash className="h-4 w-4" />
-          <span>标签筛选</span>
+      <section className="border-b border-foreground/10 pb-6">
+        <div className="flex items-center gap-2 pb-4">
+          <span className="meta-kicker">标签筛选</span>
         </div>
 
         {tagsQuery.isLoading ? <ListSkeleton rows={1} className="max-w-3xl" /> : null}
         {tagsQuery.isError ? (
-          <ErrorState message={tagsQuery.error.message} onRetry={() => void tagsQuery.refetch()} className="py-6" />
+          <ErrorState message={tagsQuery.error.message} onRetry={() => void tagsQuery.refetch()} />
         ) : null}
         {!tagsQuery.isLoading && !tagsQuery.isError ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button
-              variant={!tag ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => updateFilters({ page: 1, tag: null })}
-            >
-              全部
-            </Button>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => updateFilters({ page: 1, tag: null })}>
+              <PublicPill active={!tag}>全部</PublicPill>
+            </button>
             {tagsQuery.data?.map((item) => (
-              <Button
+              <button
                 key={item.id}
-                variant={tag === item.slug ? 'default' : 'outline'}
-                size="sm"
+                type="button"
                 onClick={() => updateFilters({ page: 1, tag: item.slug })}
               >
-                {item.name}
-              </Button>
+                <PublicPill active={tag === item.slug}>{item.name}</PublicPill>
+              </button>
             ))}
           </div>
         ) : null}
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-6">
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            {tag ? `标签 · ${tag}` : '全部文章'}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            第 {page} / {totalPages} 页，共 {postsQuery.data?.total ?? 0} 篇
+          </p>
+        </div>
+
         {postsQuery.isLoading ? <ListSkeleton rows={5} /> : null}
         {postsQuery.isError ? (
           <ErrorState message={postsQuery.error.message} onRetry={() => void postsQuery.refetch()} />
         ) : null}
         {!postsQuery.isLoading && !postsQuery.isError && postsQuery.data?.items.length === 0 ? (
-          <Empty
-            title={tag ? '这个标签下还没有文章' : '还没有已发布文章'}
-            description={tag ? '切换其他标签，或者稍后再来看。' : '稍后再来看，或者进入后台发布内容。'}
-          />
+          <Empty title={tag ? '这个标签下还没有文章' : '还没有已发布文章'} />
         ) : null}
         {!postsQuery.isLoading && !postsQuery.isError && postsQuery.data?.items.length ? (
           <>
             <PostList posts={postsQuery.data.items} />
-            <div className="ui-panel-soft flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted-foreground">
-                第 {page} / {totalPages} 页，共 {postsQuery.data.total} 篇
-              </p>
+            <div className="flex items-center justify-between border-t border-foreground/10 pt-6">
+              <p className="text-sm text-muted-foreground">第 {page} / {totalPages} 页</p>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
-                  size="sm"
+                  className="rounded-md"
                   disabled={page <= 1}
                   onClick={() => updateFilters({ page: page - 1 })}
                 >
@@ -118,7 +122,7 @@ export default function PostListPage() {
                 </Button>
                 <Button
                   variant="outline"
-                  size="sm"
+                  className="rounded-md"
                   disabled={page >= totalPages}
                   onClick={() => updateFilters({ page: page + 1 })}
                 >
@@ -130,15 +134,6 @@ export default function PostListPage() {
           </>
         ) : null}
       </section>
-
-      {tag ? (
-        <div className="ui-panel-soft inline-flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
-          当前标签：
-          <Link to={`/posts?tag=${encodeURIComponent(tag)}`} className="ml-1 font-medium text-foreground">
-            {tag}
-          </Link>
-        </div>
-      ) : null}
     </div>
   )
 }

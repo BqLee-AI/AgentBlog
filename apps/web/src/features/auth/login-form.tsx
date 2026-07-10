@@ -70,7 +70,7 @@ export function LoginForm({ onSubmit, submitting, onError }: LoginFormProps) {
             <FormItem>
               <FormLabel>用户名</FormLabel>
               <FormControl>
-                <Input placeholder="3-32 位" autoComplete="username" {...field} />
+                <Input className="public-input" placeholder="3-32 位" autoComplete="username" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -85,6 +85,7 @@ export function LoginForm({ onSubmit, submitting, onError }: LoginFormProps) {
               <FormControl>
                 <Input
                   type="password"
+                  className="public-input"
                   placeholder="至少 6 位"
                   autoComplete="current-password"
                   {...field}
@@ -94,7 +95,7 @@ export function LoginForm({ onSubmit, submitting, onError }: LoginFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={submitting} className="w-full">
+        <Button type="submit" disabled={submitting} className="h-11 w-full rounded-full shadow-[0_20px_45px_-28px_hsl(var(--brand-night)/0.7)]">
           {submitting ? '登录中…' : '登录'}
         </Button>
       </form>

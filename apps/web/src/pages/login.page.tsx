@@ -77,20 +77,19 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="public-stage flex min-h-screen items-center justify-center px-4 py-10">
-      <div className="page-hero w-full max-w-md space-y-6">
+    <section className="public-shell flex min-h-[calc(100vh-5rem)] items-center justify-center py-16">
+      <div className="w-full max-w-md space-y-8">
         <div className="space-y-3 text-center">
-          <span className="eyebrow mx-auto">Welcome Back</span>
-          <h1 className="text-3xl font-black">登录 AgentBlog</h1>
-          <p className="text-sm leading-6 text-muted-foreground">
-            进入后台工作台、在线对话和额度协作空间。
-          </p>
+          <span className="eyebrow">Welcome Back</span>
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">登录 AgentBlog</h1>
         </div>
 
-        <LoginForm onSubmit={onSubmit} submitting={submitting} onError={onError} />
+        <div className="rounded-lg border border-foreground/10 bg-card p-6 sm:p-8">
+          <LoginForm onSubmit={onSubmit} submitting={submitting} onError={onError} />
+        </div>
 
-        {globalError && <p className="text-center text-sm text-destructive">{globalError}</p>}
+        {globalError ? <p className="text-center text-sm text-destructive">{globalError}</p> : null}
       </div>
-    </main>
+    </section>
   )
 }
