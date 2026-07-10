@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import type { z } from 'zod'
@@ -22,6 +22,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { ApiError } from '@/lib/http-error'
 import { setServerErrors } from '@/lib/set-server-errors'
 
 interface AgentFormProps {
@@ -52,6 +53,7 @@ export function AgentForm({
     resolver: zodResolver(createAgentSchema),
     defaultValues: toFormValues(initialValues),
   })
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   useEffect(() => {
     form.reset(toFormValues(initialValues))
@@ -61,6 +63,7 @@ export function AgentForm({
   const systemPrompt = form.watch('systemPrompt')
 
   const handleSubmit = async (values: CreateAgentDTO) => {
+    setSubmitError(null)
     const dto = initialValues
       ? updateAgentSchema.parse({
           name: values.name,
@@ -79,6 +82,11 @@ export function AgentForm({
       await onSubmit(dto)
     } catch (err) {
       setServerErrors(form, err)
+      if (err instanceof ApiError) {
+        if (!err.isValidation) setSubmitError(err.message)
+        return
+      }
+      setSubmitError('保存失败，请稍后重试')
     }
   }
 
@@ -92,7 +100,13 @@ export function AgentForm({
             <FormItem>
               <FormLabel>Agent 名称</FormLabel>
               <FormControl>
-                <Input placeholder="例如：写作助手" {...field} />
+                <Input
+                  type="text"
+                  placeholder="例如：写作助手"
+                  autoComplete="off"
+                  spellCheck={false}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -164,10 +178,17 @@ export function AgentForm({
           )}
         />
 
-        <div className="flex justify-end">
-          <Button type="submit" disabled={submitting}>
-            {submitting ? '保存中…' : submitLabel}
-          </Button>
+        <div className="space-y-3">
+          {submitError && (
+            <p role="alert" className="text-sm text-destructive">
+              {submitError}
+            </p>
+          )}
+          <div className="flex justify-end">
+            <Button type="submit" disabled={submitting}>
+              {submitting ? '保存中…' : submitLabel}
+            </Button>
+          </div>
         </div>
       </form>
     </Form>
