@@ -7,6 +7,7 @@
  *   - 内容区：<Outlet/> 渲染子路由。
  */
 import { Link, Outlet } from 'react-router-dom'
+import { ParticleField } from '@/components/effects/particle-field'
 import { AdminSidebar } from '@/components/layout/admin-sidebar'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/use-auth'
@@ -15,33 +16,33 @@ export default function AdminLayout() {
   const { user } = useAuth()
 
   return (
-    <div className="admin-stage min-h-screen">
-      <div className="page-shell flex flex-col gap-6">
-        <header className="page-hero">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-3">
+    <div className="admin-stage relative min-h-screen overflow-hidden">
+      <ParticleField />
+      <div className="public-shell relative space-y-10 py-12 sm:py-16">
+        <header className="space-y-8 border-b border-foreground/10 pb-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl space-y-4">
               <span className="eyebrow">后台工作台</span>
-              <div className="space-y-2">
-                <h1 className="text-3xl font-black text-foreground sm:text-4xl">AgentBlog Console</h1>
-                <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-                  统一处理文章、Agent、API Key 与额度协作。视觉层采用同一套 teal / gold / coral 主题，避免前后台割裂。
-                </p>
-              </div>
+              <h1 className="text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl">
+                AgentBlog Console
+              </h1>
             </div>
 
-            <div className="ui-panel-soft min-w-[280px] rounded-[1.75rem] px-5 py-5">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary/70">当前会话</p>
-              <p className="mt-2 text-xl font-bold text-foreground">
-                {user ? user.username : '未登录'}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {user ? `${user.role} · ${user.credits} credits` : '请先登录'}
-              </p>
-              <div className="mt-4 flex gap-2">
-                <Button asChild variant="outline" size="sm">
+            <div className="min-w-[260px] space-y-3 border-t border-foreground/10 pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+              <p className="meta-kicker">当前会话</p>
+              <div>
+                <p className="text-lg font-semibold tracking-tight text-foreground">
+                  {user ? user.username : '未登录'}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {user ? `${user.role} · ${user.credits} credits` : '请先登录'}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild variant="outline" size="sm" className="rounded-md">
                   <Link to="/">回到前台</Link>
                 </Button>
-                <Button asChild size="sm">
+                <Button asChild size="sm" className="rounded-md">
                   <Link to="/chat">去对话</Link>
                 </Button>
               </div>

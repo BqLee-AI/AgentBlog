@@ -46,9 +46,6 @@ export default function AdminTagsPage() {
       <section className="page-hero space-y-2">
         <span className="eyebrow">Taxonomy</span>
         <h1 className="text-2xl font-semibold tracking-tight">标签管理</h1>
-        <p className="text-sm text-muted-foreground">
-          标签可公开读取，但创建和删除只开放给 admin+。
-        </p>
       </section>
 
       <section className="ui-panel p-6">
@@ -81,7 +78,7 @@ export default function AdminTagsPage() {
         <ErrorState message={tagsQuery.error.message} onRetry={() => void tagsQuery.refetch()} />
       ) : null}
       {!tagsQuery.isLoading && !tagsQuery.isError && tagsQuery.data?.length === 0 ? (
-        <Empty title="还没有标签" description="创建后即可在文章表单中多选使用。" />
+        <Empty title="还没有标签" />
       ) : null}
       {!tagsQuery.isLoading && !tagsQuery.isError && tagsQuery.data?.length ? (
         <section className="space-y-3">

@@ -33,13 +33,10 @@ export function AdminSidebar() {
   const items = NAV.filter((i) => !i.roles || (user && i.roles.includes(user.role)))
 
   return (
-    <aside className="ui-panel w-full p-4 lg:sticky lg:top-6">
-      <div className="mb-4 rounded-[1.5rem] border border-primary/10 bg-white/70 px-4 py-4">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary/70">Workspace</p>
-        <p className="mt-1 text-lg font-bold text-foreground">后台导航</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          文章、Agent、额度与管理能力统一收口在这里。
-        </p>
+    <aside className="w-full border-b border-foreground/10 pb-4 lg:sticky lg:top-6 lg:border-b-0 lg:pb-0">
+      <div className="mb-5 space-y-2">
+        <p className="meta-kicker">Workspace</p>
+        <p className="text-lg font-semibold tracking-tight text-foreground">后台导航</p>
       </div>
 
       <nav>
@@ -51,10 +48,10 @@ export function AdminSidebar() {
                 end={item.to === '/admin/agent'}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 rounded-[1.2rem] border px-3 py-3 text-sm font-semibold transition-all',
+                    'flex items-center gap-3 rounded-md border px-3 py-2.5 text-sm font-medium transition-colors',
                     isActive
-                      ? 'border-transparent bg-[linear-gradient(135deg,#ffe47a,#ffd23f)] text-[#234041] shadow-accent-glow'
-                      : 'border-primary/10 bg-white/70 text-primary/80 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-[rgba(232,246,245,0.92)] hover:text-primary',
+                      ? 'border-foreground bg-foreground text-background'
+                      : 'border-transparent text-muted-foreground hover:border-foreground/10 hover:bg-secondary hover:text-foreground',
                   )
                 }
               >

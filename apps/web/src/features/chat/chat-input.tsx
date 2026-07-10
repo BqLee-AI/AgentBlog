@@ -27,29 +27,26 @@ export function ChatInput({
   }
 
   return (
-    <div className="border-t bg-background/95 px-4 py-4">
+    <div className="border-t border-foreground/10 bg-card px-4 py-4">
       <form className="space-y-3" onSubmit={(event) => void onSubmit(event)}>
         <textarea
           value={input}
           onChange={onChange}
           onKeyDown={handleKeyDown}
-          placeholder="输入你想让 Agent 帮你完成的事情，Enter 发送，Shift+Enter 换行"
-          className="min-h-28 w-full resize-y rounded-lg border border-input bg-background px-3 py-3 text-sm leading-6 outline-none transition focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          placeholder="输入消息"
+          className="min-h-28 w-full resize-y rounded-lg border border-input bg-background px-3 py-3 text-sm leading-6 outline-none transition focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={disabled}
         />
 
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-xs text-muted-foreground">对话仅保留在当前页面内存中，刷新后会清空。</p>
-          <div className="flex items-center gap-2">
-            {isStreaming && (
-              <Button type="button" variant="outline" onClick={() => void onStop()}>
-                停止生成
-              </Button>
-            )}
-            <Button type="submit" disabled={disabled || input.trim().length === 0}>
-              {isStreaming ? '生成中…' : '发送'}
+        <div className="flex justify-end gap-2">
+          {isStreaming && (
+            <Button type="button" variant="outline" className="rounded-md" onClick={() => void onStop()}>
+              停止生成
             </Button>
-          </div>
+          )}
+          <Button type="submit" className="rounded-md" disabled={disabled || input.trim().length === 0}>
+            {isStreaming ? '生成中…' : '发送'}
+          </Button>
         </div>
       </form>
     </div>

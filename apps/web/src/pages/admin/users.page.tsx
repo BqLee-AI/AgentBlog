@@ -72,13 +72,7 @@ export default function AdminUsersPage() {
           <span className="eyebrow">User Ops</span>
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight text-primary">用户管理</h1>
-            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-              统一处理角色、额度和流水入口，方便管理员从一个列表完成主要运营动作。
-            </p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            仅覆盖用户列表、角色调整与充值。管理员代建用户属于 `#43`，本次不纳入范围。
-          </p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -87,7 +81,6 @@ export default function AdminUsersPage() {
               Visible Users
             </p>
             <p className="mt-2 text-3xl font-semibold text-primary">{total}</p>
-            <p className="mt-1 text-sm text-muted-foreground">当前分页总用户数</p>
           </div>
           <div className="ui-panel-soft min-w-[180px] rounded-[1.5rem] px-5 py-4">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary/70">
@@ -96,7 +89,6 @@ export default function AdminUsersPage() {
             <p className="mt-2 text-3xl font-semibold text-primary">
               {page}/{totalPages}
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">每页 {pageSize} 位用户</p>
           </div>
         </div>
       </section>
@@ -117,9 +109,6 @@ export default function AdminUsersPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="section-title w-fit border-none pb-0">用户列表</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                支持直接查看额度流水、发起充值以及按权限调整角色。
-              </p>
             </div>
             <div className="ui-chip">
               {usersQuery.isFetching ? '列表刷新中' : '列表已同步'}
