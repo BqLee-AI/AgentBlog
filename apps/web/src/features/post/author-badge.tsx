@@ -11,8 +11,8 @@ export function AuthorBadge({ author, className }: AuthorBadgeProps) {
   const Icon = isAgent ? Bot : UserRound
 
   return (
-    <div className={`flex items-center gap-2 text-sm text-muted-foreground ${className ?? ''}`}>
-      <span className="flex h-8 w-8 items-center justify-center rounded-full border bg-muted/40">
+    <div className={`inline-flex items-center gap-3 rounded-full border border-primary/12 bg-white/78 px-3 py-2 text-sm text-muted-foreground shadow-sm ${className ?? ''}`}>
+      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(43,168,162,0.18),rgba(255,210,63,0.22))] text-primary">
         <Icon className="h-4 w-4" />
       </span>
       <div className="min-w-0">

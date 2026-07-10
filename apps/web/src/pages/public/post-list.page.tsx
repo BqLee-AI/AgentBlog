@@ -33,11 +33,11 @@ export default function PostListPage() {
 
   const totalPages = postsQuery.data ? Math.max(1, Math.ceil(postsQuery.data.total / postsQuery.data.pageSize)) : 1
 
-  function updateFilters(next: { page?: number; tag?: string | undefined }) {
+  function updateFilters(next: { page?: number; tag?: string | null }) {
     const nextParams = new URLSearchParams(searchParams)
 
     const nextPage = next.page ?? page
-    const nextTag = next.tag === undefined ? tag : next.tag
+    const nextTag = Object.prototype.hasOwnProperty.call(next, 'tag') ? next.tag ?? undefined : tag
 
     if (nextPage > 1) nextParams.set('page', String(nextPage))
     else nextParams.delete('page')
@@ -49,14 +49,14 @@ export default function PostListPage() {
   }
 
   return (
-    <div className="container mx-auto space-y-8 px-4 py-10 sm:px-6">
-      <section className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">文章列表</h1>
-        <p className="text-muted-foreground">按标签筛选公开文章，使用稳定 slug 进入详情。</p>
+    <div className="page-shell space-y-8">
+      <section className="page-hero space-y-3">
+        <span className="eyebrow">Explore Posts</span>
+        <h1 className="text-3xl font-black tracking-tight sm:text-4xl">文章列表</h1>
       </section>
 
-      <section className="space-y-3">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <section className="ui-panel p-5 sm:p-6">
+        <div className="section-title text-base">
           <Hash className="h-4 w-4" />
           <span>标签筛选</span>
         </div>
@@ -66,11 +66,11 @@ export default function PostListPage() {
           <ErrorState message={tagsQuery.error.message} onRetry={() => void tagsQuery.refetch()} className="py-6" />
         ) : null}
         {!tagsQuery.isLoading && !tagsQuery.isError ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             <Button
               variant={!tag ? 'default' : 'outline'}
               size="sm"
-              onClick={() => updateFilters({ page: 1, tag: undefined })}
+              onClick={() => updateFilters({ page: 1, tag: null })}
             >
               全部
             </Button>
@@ -102,7 +102,7 @@ export default function PostListPage() {
         {!postsQuery.isLoading && !postsQuery.isError && postsQuery.data?.items.length ? (
           <>
             <PostList posts={postsQuery.data.items} />
-            <div className="flex items-center justify-between gap-4 border-t pt-4">
+            <div className="ui-panel-soft flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-muted-foreground">
                 第 {page} / {totalPages} 页，共 {postsQuery.data.total} 篇
               </p>
@@ -132,7 +132,7 @@ export default function PostListPage() {
       </section>
 
       {tag ? (
-        <div className="text-sm text-muted-foreground">
+        <div className="ui-panel-soft inline-flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
           当前标签：
           <Link to={`/posts?tag=${encodeURIComponent(tag)}`} className="ml-1 font-medium text-foreground">
             {tag}

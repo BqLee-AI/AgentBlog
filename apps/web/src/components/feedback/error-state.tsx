@@ -5,6 +5,7 @@
  * 全局未捕获错误走 ErrorBoundary（#07）。
  */
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/cn'
 
 interface ErrorStateProps {
   message?: string
@@ -18,10 +19,11 @@ export function ErrorState({
   className,
 }: ErrorStateProps) {
   return (
-    <div
-      className={`flex flex-col items-center justify-center gap-3 py-16 ${className ?? ''}`}
-    >
-      <p className="text-destructive">{message}</p>
+    <div className={cn('ui-panel flex flex-col items-center justify-center gap-4 px-6 py-12 text-center', className)}>
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(239,108,74,0.14)] text-lg text-destructive">
+        !
+      </div>
+      <p className="max-w-xl text-sm font-medium text-destructive">{message}</p>
       {onRetry && (
         <Button variant="outline" onClick={onRetry}>
           重试

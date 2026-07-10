@@ -126,7 +126,7 @@ export function AgentForm({
               <FormLabel>状态</FormLabel>
               <FormControl>
                 <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="field-surface flex h-11 w-full px-4 py-2 text-sm"
                   value={field.value ?? AgentStatus.ACTIVE}
                   onChange={(event) =>
                     field.onChange(event.target.value as CreateAgentDTO['status'])
@@ -150,7 +150,7 @@ export function AgentForm({
               <FormLabel>System Prompt</FormLabel>
               <FormControl>
                 <textarea
-                  className="min-h-48 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="field-surface min-h-48 w-full px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   placeholder="定义你的 Agent 擅长什么、如何回答、应遵守哪些边界。"
                   value={field.value ?? ''}
                   onChange={(event) => field.onChange(event.target.value)}

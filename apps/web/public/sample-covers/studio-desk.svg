@@ -1,0 +1,21 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#E9F5F2"/>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="250" cy="180" r="160" fill="#F8D781" fill-opacity="0.62"/>
+  <circle cx="1320" cy="700" r="220" fill="#E99B76" fill-opacity="0.36"/>
+  <rect x="150" y="130" width="1300" height="640" rx="40" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.58)" stroke-width="2"/>
+  <rect x="220" y="220" width="520" height="330" rx="28" fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.48)" stroke-width="2"/>
+  <rect x="860" y="210" width="510" height="110" rx="24" fill="rgba(255,255,255,0.24)" stroke="rgba(255,255,255,0.54)" stroke-width="2"/>
+  <rect x="860" y="360" width="420" height="60" rx="18" fill="rgba(255,255,255,0.18)"/>
+  <rect x="860" y="448" width="350" height="60" rx="18" fill="rgba(255,255,255,0.18)"/>
+  <rect x="860" y="536" width="460" height="60" rx="18" fill="rgba(255,255,255,0.18)"/>
+  <path d="M270 640C398 592 508 576 600 591C721 611 814 691 930 700C1042 709 1165 641 1315 530" stroke="rgba(27,74,78,0.2)" stroke-width="8" stroke-linecap="round"/>
+  <text x="220" y="190" fill="#2C5559" fill-opacity="0.82" font-family="Georgia, serif" font-size="28" letter-spacing="7">AGENTBLOG</text>
+  <defs>
+    <linearGradient id="bg" x1="108" y1="102" x2="1492" y2="798" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F4FBEF"/>
+      <stop offset="0.55" stop-color="#D8EEE8"/>
+      <stop offset="1" stop-color="#F5D2B8"/>
+    </linearGradient>
+  </defs>
+</svg>
