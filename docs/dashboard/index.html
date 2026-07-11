@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AgentBlog 历史燃尽图</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #172033;
+        background: #f5f7fb;
+      }
+
+      * { box-sizing: border-box; }
+
+      body { margin: 0; }
+
+      main {
+        width: min(960px, calc(100% - 32px));
+        margin: 48px auto 64px;
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        color: #2667ff;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.4rem); letter-spacing: -0.05em; }
+      .summary { max-width: 680px; color: #526075; line-height: 1.65; }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin: 28px 0;
+      }
+
+      .metric, .card {
+        border: 1px solid #e2e7f0;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 8px 24px rgb(23 32 51 / 5%);
+      }
+
+      .metric { padding: 20px; }
+      .metric span { display: block; color: #657188; font-size: 0.84rem; }
+      .metric strong { display: block; margin-top: 6px; font-size: 2rem; }
+
+      .card { padding: clamp(18px, 4vw, 32px); }
+      h2 { margin: 0 0 20px; font-size: 1.25rem; }
+
+      .chart { width: 100%; height: auto; overflow: visible; }
+      .axis { stroke: #c7d0df; stroke-width: 1; }
+      .grid { stroke: #e7ebf2; stroke-width: 1; stroke-dasharray: 4 5; }
+      .line { fill: none; stroke: #2667ff; stroke-linecap: round; stroke-linejoin: round; stroke-width: 5; }
+      .area { fill: url(#area-fill); }
+      .point { fill: #fff; stroke: #2667ff; stroke-width: 4; }
+      .label { fill: #657188; font-size: 13px; }
+      .value { fill: #172033; font-size: 14px; font-weight: 800; }
+
+      table { width: 100%; border-collapse: collapse; margin-top: 28px; }
+      th, td { padding: 13px 10px; border-bottom: 1px solid #e7ebf2; text-align: left; }
+      th { color: #657188; font-size: 0.82rem; }
+      td:nth-child(n + 2), th:nth-child(n + 2) { text-align: right; }
+
+      .note { margin: 22px 0 0; color: #657188; font-size: 0.9rem; line-height: 1.6; }
+      a { color: #1f5bea; font-weight: 700; }
+
+      @media (max-width: 600px) {
+        main { margin-top: 28px; }
+        .metrics { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">AgentBlog · Historical Sprint</p>
+      <h1>历史燃尽图</h1>
+      <p class="summary">
+        项目冲刺周期为 2026 年 7 月 8 日至 7 月 10 日。图表按 GitHub Issue 的真实关闭时间统计剩余工作项，不包含后续开发计划。
+      </p>
+
+      <section class="metrics" aria-label="冲刺概览">
+        <article class="metric"><span>冲刺周期</span><strong>3 天</strong></article>
+        <article class="metric"><span>完成 Issue</span><strong>24</strong></article>
+        <article class="metric"><span>最终剩余</span><strong>0</strong></article>
+      </section>
+
+      <section class="card" aria-labelledby="chart-title">
+        <h2 id="chart-title">剩余 Issue 趋势</h2>
+        <svg class="chart" viewBox="0 0 860 390" role="img" aria-labelledby="chart-title chart-description">
+          <desc id="chart-description">剩余 Issue 从 24 项依次下降到 8 项、1 项和 0 项。</desc>
+          <defs>
+            <linearGradient id="area-fill" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#2667ff" stop-opacity="0.22" />
+              <stop offset="100%" stop-color="#2667ff" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <line class="grid" x1="72" x2="820" y1="52" y2="52" />
+          <line class="grid" x1="72" x2="820" y1="141" y2="141" />
+          <line class="grid" x1="72" x2="820" y1="230" y2="230" />
+          <line class="axis" x1="72" x2="820" y1="320" y2="320" />
+          <line class="axis" x1="72" x2="72" y1="38" y2="320" />
+          <text class="label" x="48" y="57">24</text>
+          <text class="label" x="48" y="146">16</text>
+          <text class="label" x="54" y="235">8</text>
+          <text class="label" x="58" y="325">0</text>
+          <path class="area" d="M 92 52 L 330 230 L 570 308 L 808 320 L 808 320 L 92 320 Z" />
+          <path class="line" d="M 92 52 L 330 230 L 570 308 L 808 320" />
+          <circle class="point" cx="92" cy="52" r="8" />
+          <circle class="point" cx="330" cy="230" r="8" />
+          <circle class="point" cx="570" cy="308" r="8" />
+          <circle class="point" cx="808" cy="320" r="8" />
+          <text class="value" x="92" y="32" text-anchor="middle">24</text>
+          <text class="value" x="330" y="210" text-anchor="middle">8</text>
+          <text class="value" x="570" y="288" text-anchor="middle">1</text>
+          <text class="value" x="808" y="300" text-anchor="middle">0</text>
+          <text class="label" x="92" y="353" text-anchor="middle">7/8 开始</text>
+          <text class="label" x="330" y="353" text-anchor="middle">7/8 结束</text>
+          <text class="label" x="570" y="353" text-anchor="middle">7/9 结束</text>
+          <text class="label" x="808" y="353" text-anchor="middle">7/10 结束</text>
+        </svg>
+
+        <table>
+          <thead><tr><th>时点</th><th>当日完成</th><th>累计完成</th><th>剩余</th></tr></thead>
+          <tbody>
+            <tr><td>7/8 开始</td><td>0</td><td>0</td><td>24</td></tr>
+            <tr><td>7/8 结束</td><td>16</td><td>16</td><td>8</td></tr>
+            <tr><td>7/9 结束</td><td>7</td><td>23</td><td>1</td></tr>
+            <tr><td>7/10 结束</td><td>1</td><td>24</td><td>0</td></tr>
+          </tbody>
+        </table>
+        <p class="note">数据来源：<a href="https://github.com/BqLee-AI/AgentBlog/issues?q=is%3Aissue%20state%3Aclosed">GitHub 已关闭 Issues</a>。统计窗口为 2026-07-08T00:00:00Z 至 2026-07-11T00:00:00Z。</p>
+      </section>
+    </main>
+  </body>
+</html>
