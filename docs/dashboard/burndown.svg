@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title description">
+  <title id="title">AgentBlog 历史燃尽图</title>
+  <desc id="description">2026 年 7 月 8 日到 10 日，剩余 Issue 从 24 项下降到 0 项。</desc>
+  <defs>
+    <linearGradient id="background" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#f7f9ff" />
+      <stop offset="1" stop-color="#eef3ff" />
+    </linearGradient>
+    <linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
+      <stop stop-color="#2667ff" stop-opacity=".24" />
+      <stop offset="1" stop-color="#2667ff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="760" fill="url(#background)" />
+  <rect x="48" y="42" width="1104" height="676" rx="28" fill="#fff" stroke="#e0e7f5" stroke-width="2" />
+  <text x="96" y="112" fill="#2667ff" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="2">AGENTBLOG · HISTORICAL SPRINT</text>
+  <text x="96" y="164" fill="#172033" font-family="Arial, sans-serif" font-size="42" font-weight="700">历史燃尽图</text>
+  <text x="96" y="198" fill="#657188" font-family="Arial, sans-serif" font-size="19">2026 年 7 月 8 日至 7 月 10 日 · 基于 24 个真实关闭 Issue</text>
+
+  <line x1="172" y1="270" x2="1060" y2="270" stroke="#e5eaf3" stroke-dasharray="6 8" stroke-width="2" />
+  <line x1="172" y1="380" x2="1060" y2="380" stroke="#e5eaf3" stroke-dasharray="6 8" stroke-width="2" />
+  <line x1="172" y1="490" x2="1060" y2="490" stroke="#e5eaf3" stroke-dasharray="6 8" stroke-width="2" />
+  <line x1="172" y1="600" x2="1060" y2="600" stroke="#bdc8da" stroke-width="2" />
+  <line x1="172" y1="250" x2="172" y2="600" stroke="#bdc8da" stroke-width="2" />
+  <g fill="#657188" font-family="Arial, sans-serif" font-size="18" text-anchor="end">
+    <text x="148" y="276">24</text>
+    <text x="148" y="386">16</text>
+    <text x="148" y="496">8</text>
+    <text x="148" y="606">0</text>
+  </g>
+  <path d="M 202 270 L 488 490 L 774 586 L 1030 600 L 1030 600 L 202 600 Z" fill="url(#area)" />
+  <path d="M 202 270 L 488 490 L 774 586 L 1030 600" fill="none" stroke="#2667ff" stroke-linecap="round" stroke-linejoin="round" stroke-width="8" />
+  <g fill="#fff" stroke="#2667ff" stroke-width="6">
+    <circle cx="202" cy="270" r="12" />
+    <circle cx="488" cy="490" r="12" />
+    <circle cx="774" cy="586" r="12" />
+    <circle cx="1030" cy="600" r="12" />
+  </g>
+  <g fill="#172033" font-family="Arial, sans-serif" font-size="24" font-weight="700" text-anchor="middle">
+    <text x="202" y="238">24</text>
+    <text x="488" y="458">8</text>
+    <text x="774" y="554">1</text>
+    <text x="1030" y="568">0</text>
+  </g>
+  <g fill="#526075" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">
+    <text x="202" y="642">7/8 开始</text>
+    <text x="488" y="642">7/8 结束</text>
+    <text x="774" y="642">7/9 结束</text>
+    <text x="1030" y="642">7/10 结束</text>
+  </g>
+  <text x="96" y="685" fill="#657188" font-family="Arial, sans-serif" font-size="16">剩余 Issue：24 → 8 → 1 → 0　|　完成 Issue：24　|　冲刺周期：3 天</text>
+</svg>
