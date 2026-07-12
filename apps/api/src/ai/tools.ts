@@ -19,8 +19,10 @@ import { z } from 'zod'
 import { tool as aiTool, jsonSchema } from 'ai'
 import { db } from '@/db/client'
 import { posts } from '@/db/schema'
+import { env } from '@/config/env'
 import { HttpError } from '@/lib/errors'
 import { normalizeTagNames } from '@agentblog/shared'
+import { storage } from '@/lib/storage'
 import { generateSlug } from '@/lib/slug'
 import { postService } from '@/modules/post/post.service'
 import { postRepository, type PostRow, type PostTagRow } from '@/modules/post/post.repository'
@@ -205,6 +207,35 @@ export function postTools(ctx: ToolContext) {
         return { deleted: true }
       },
     },
+
+    upload_image: {
+      description:
+        '上传图片到博客系统并返回永久可访问的 URL（JPEG/PNG/WebP/GIF）。用户在对话中发送的图片会被客户端自动转成 base64 传入。返回的 url 可用于 create_post 的 coverUrl，或嵌入 Markdown 正文 ![描述](url)。',
+      shape: z.object({
+        base64: z.string().min(1).describe('图片 base64 编码（不含 data:xxx;base64, 前缀）'),
+        mimeType: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/gif']).describe('图片 MIME 类型'),
+        purpose: z.enum(['cover', 'content', 'misc']).default('content').describe('cover=封面, content=正文, misc=其他'),
+      }).shape,
+      schema: z.object({
+        base64: z.string().min(1).describe('图片 base64 编码（不含 data:xxx;base64, 前缀）'),
+        mimeType: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/gif']).describe('图片 MIME 类型'),
+        purpose: z.enum(['cover', 'content', 'misc']).default('content').describe('cover=封面, content=正文, misc=其他'),
+      }),
+      handler: async (args: {
+        base64: string
+        mimeType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
+        purpose: 'cover' | 'content' | 'misc'
+      }): Promise<{ url: string; key: string; size: number }> => {
+        const extMap: Record<string, string> = {
+          'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif',
+        }
+        const buf = Buffer.from(args.base64, 'base64')
+        const maxBytes = env.UPLOAD_MAX_SIZE_MB * 1024 * 1024
+        if (buf.length > maxBytes) throw HttpError.badRequest('图片不能超过 ' + env.UPLOAD_MAX_SIZE_MB + 'MB')
+        const file = new File([buf], 'upload' + (extMap[args.mimeType] || '.png'), { type: args.mimeType })
+        return storage.save(file, args.purpose)
+      },
+    },
   }
 }
 
@@ -260,6 +291,11 @@ export function toAiSdkTools(defs: ReturnType<typeof postTools>) {
       description: defs.delete_post.description,
       inputSchema: toAiSchema(defs.delete_post.schema),
       execute: defs.delete_post.handler,
+    }),
+    upload_image: aiTool({
+      description: defs.upload_image.description,
+      inputSchema: toAiSchema(defs.upload_image.schema),
+      execute: defs.upload_image.handler,
     }),
   }
 }
