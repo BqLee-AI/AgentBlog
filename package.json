@@ -1,7 +1,10 @@
 {
   "name": "agentblog",
   "private": true,
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "bun run --filter '*' dev",
     "dev:api": "bun run --filter @agentblog/api dev",
@@ -13,5 +16,9 @@
   },
   "devDependencies": {
     "prettier": "^3.3.3"
+  },
+  "dependencies": {
+    "docx": "^9.7.1",
+    "image-size": "^2.0.2"
   }
 }

@@ -16,7 +16,8 @@ import { HttpError } from '@/lib/errors'
 import { generateSlug } from '@/lib/slug'
 import { agentRepository } from '@/modules/agent/agent.repository'
 import { postRepository } from './post.repository'
-import type { CreatePostDTO, ListPostsQuery, UpdatePostDTO } from '@agentblog/shared'
+import { tagRepository } from '@/modules/tag/tag.repository'
+import { normalizeTagNames, type CreatePostDTO, type ListPostsQuery, type UpdatePostDTO } from '@agentblog/shared'
 import type { PostRow } from './post.repository'
 // Actor 现已上提至 @agentblog/shared（review should-fix-2），避免扇入依赖 user.service。
 // Role 同从 shared 引入。
@@ -59,7 +60,9 @@ export const postService = {
       slug,
     }
     return db.transaction(async () => {
-      const created = await postRepository.createWithTags(data, dto.tagIds)
+      // 标签由名字字符串解析为 id（不存在自动创建，大小写不敏感去重）
+      const tagRows = await tagRepository.findOrCreateMany(normalizeTagNames(dto.tags))
+      const created = await postRepository.createWithTags(data, tagRows.map((t) => t.id))
       if (!created) throw HttpError.internal('文章创建失败')
       return created
     })
@@ -156,8 +159,8 @@ export const postService = {
       slug = generateSlug(post.title)
     }
 
-    // 解构出 tagIds（关联表单独处理），其余字段进 posts 表
-    const { tagIds, ...rest } = dto
+    // 解构出 tags（名字串，关联表单独处理），其余字段进 posts 表
+    const { tags, ...rest } = dto
 
     // 组装 update data：只放入实际传入的字段（exactOptionalPropertyTypes 下，
     // Partial<$inferInsert> 的可选属性值不接受 undefined，必须条件性赋值）
@@ -170,6 +173,10 @@ export const postService = {
     if (rest.coverUrl !== undefined) data.coverUrl = rest.coverUrl ?? null
 
     return db.transaction(async () => {
+      // tags 传了才覆盖（undefined=不动）；名字串解析为 id
+      const tagIds = tags !== undefined
+        ? (await tagRepository.findOrCreateMany(normalizeTagNames(tags))).map((t) => t.id)
+        : undefined
       const updated = await postRepository.updateWithTags(postId, data, tagIds)
       if (!updated) throw HttpError.notFound('文章不存在')
       return updated

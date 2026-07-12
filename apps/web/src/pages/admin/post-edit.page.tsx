@@ -1,10 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { type CreatePostDTO, createPostSchema, type PostWithAuthorDTO } from '@agentblog/shared'
 import { useForm } from 'react-hook-form'
 import type { z } from 'zod'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
-import { Empty } from '@/components/feedback/empty'
 import { ErrorState } from '@/components/feedback/error-state'
 import { ListSkeleton } from '@/components/feedback/list-skeleton'
 import { ImageUpload } from '@/components/image-upload'
@@ -24,7 +23,6 @@ import {
   usePostForEdit,
   useUpdatePost,
 } from '@/features/post/use-posts'
-import { useTags } from '@/features/tag/use-tags'
 import { setServerErrors } from '@/lib/set-server-errors'
 
 type PostFormInput = z.input<typeof createPostSchema>
@@ -35,7 +33,7 @@ const DEFAULT_VALUES: PostFormInput = {
   content: '',
   coverUrl: undefined,
   status: 'draft',
-  tagIds: [],
+  tags: [],
 }
 
 function toFormValues(post: PostWithAuthorDTO | undefined): PostFormInput {
@@ -45,7 +43,7 @@ function toFormValues(post: PostWithAuthorDTO | undefined): PostFormInput {
     content: post?.content ?? '',
     coverUrl: post?.coverUrl ?? undefined,
     status: post?.status ?? 'draft',
-    tagIds: post?.tags.map((tag) => tag.id) ?? [],
+    tags: post?.tags.map((tag) => tag.name) ?? [],
   }
 }
 
@@ -58,10 +56,11 @@ export default function PostEditPage() {
     isEdit && (!parsedPostId || !Number.isInteger(parsedPostId) || parsedPostId <= 0)
   const postId = invalidPostId ? undefined : parsedPostId
 
-  const tagsQuery = useTags()
   const postQuery = usePostForEdit(isEdit ? postId : undefined)
   const createPost = useCreatePost()
   const updatePost = useUpdatePost()
+
+  const [tagInput, setTagInput] = useState('')
 
   const form = useForm<PostFormInput, unknown, CreatePostDTO>({
     resolver: zodResolver(createPostSchema),
@@ -103,15 +102,7 @@ export default function PostEditPage() {
     return <ErrorState message={postQuery.error.message} onRetry={() => void postQuery.refetch()} />
   }
 
-  if (tagsQuery.isLoading) {
-    return <ListSkeleton rows={3} />
-  }
-
-  if (tagsQuery.isError) {
-    return <ErrorState message={tagsQuery.error.message} onRetry={() => void tagsQuery.refetch()} />
-  }
-
-  const selectedTagIds = form.watch('tagIds') ?? []
+  const currentTags = form.watch('tags') ?? []
   const contentPreview = form.watch('content')
   const submitting = createPost.isPending || updatePost.isPending
 
@@ -234,45 +225,54 @@ export default function PostEditPage() {
 
               <FormField
                 control={form.control}
-                name="tagIds"
+                name="tags"
                 render={() => (
                   <FormItem>
                     <FormLabel>标签</FormLabel>
                     <FormControl>
                       <div className="space-y-2">
-                        {tagsQuery.data?.length ? (
-                          tagsQuery.data.map((tag) => {
-                            const checked = selectedTagIds.includes(tag.id)
-
-                            return (
-                              <label
-                                key={tag.id}
-                                className="field-surface flex cursor-pointer items-center justify-between px-4 py-3 text-sm"
+                        {currentTags.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {currentTags.map((name) => (
+                              <button
+                                key={name}
+                                type="button"
+                                onClick={() => {
+                                  form.setValue(
+                                    'tags',
+                                    currentTags.filter((item) => item !== name),
+                                    { shouldDirty: true, shouldValidate: true },
+                                  )
+                                }}
+                                className="field-surface flex items-center gap-1 rounded-[1.25rem] px-3 py-1 text-sm"
                               >
-                                <span>{tag.name}</span>
-                                <input
-                                  type="checkbox"
-                                  checked={checked}
-                                  onChange={() => {
-                                    const current = form.getValues('tagIds') ?? []
-                                    form.setValue(
-                                      'tagIds',
-                                      checked
-                                        ? current.filter((item) => item !== tag.id)
-                                        : [...current, tag.id],
-                                      { shouldDirty: true, shouldValidate: true },
-                                    )
-                                  }}
-                                />
-                              </label>
-                            )
-                          })
-                        ) : (
-                          <Empty
-                            title="暂无标签"
-                            className="rounded-[1.25rem] py-8"
-                          />
-                        )}
+                                {name}
+                                <span className="text-muted-foreground hover:text-foreground">×</span>
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                        <Input
+                          value={tagInput}
+                          placeholder={currentTags.length >= 10 ? '最多 10 个标签' : '输入标签，回车添加'}
+                          disabled={currentTags.length >= 10}
+                          onChange={(event) => setTagInput(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key !== 'Enter') return
+                            event.preventDefault()
+                            const value = tagInput.trim().slice(0, 30)
+                            if (!value) return
+                            if (currentTags.some((item) => item.toLowerCase() === value.toLowerCase())) {
+                              setTagInput('')
+                              return
+                            }
+                            form.setValue('tags', [...currentTags, value], {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            })
+                            setTagInput('')
+                          }}
+                        />
                       </div>
                     </FormControl>
                     <FormMessage />

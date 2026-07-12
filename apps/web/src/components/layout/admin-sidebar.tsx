@@ -1,12 +1,12 @@
 /**
  * 后台侧栏 —— 按角色过滤导航项。
  *
- * 与守卫呼应：tags/users 仅 admin+ 可见。
+ * 与守卫呼应：users 仅 admin+ 可见。
  * 📌 菜单隐藏 ≠ 权限安全：用户手敲 URL 仍会进路由，RequireRole 守卫是第二道防线，
  *    后端 RBAC 是最终防线（见 02 §八）。
  */
 import { NavLink } from 'react-router-dom'
-import { Bot, BookOpenText, Coins, KeyRound, Tags, Users } from 'lucide-react'
+import { Bot, BookOpenText, Coins, KeyRound, Users } from 'lucide-react'
 import type { Role } from '@agentblog/shared'
 import { useAuth } from '@/features/auth/use-auth'
 import { cn } from '@/lib/cn'
@@ -24,7 +24,6 @@ const NAV: NavItem[] = [
   { to: '/admin/agent', label: '我的 Agent', icon: Bot },
   { to: '/admin/agent/keys', label: 'API Key', icon: KeyRound },
   { to: '/admin/credits', label: '额度流水', icon: Coins },
-  { to: '/admin/tags', label: '标签', icon: Tags, roles: ['admin', 'super_admin'] },
   { to: '/admin/users', label: '用户管理', icon: Users, roles: ['admin', 'super_admin'] },
 ]
 
