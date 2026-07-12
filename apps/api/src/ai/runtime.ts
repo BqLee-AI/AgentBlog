@@ -15,7 +15,7 @@
  *
  * runtime 不读 Hono Context（供未来其他入口复用）；agent/messages 由调用方传入。
  */
-import { streamText, type CoreMessage } from 'ai'
+import { streamText, stepCountIs, type CoreMessage } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
 import { createAnthropic } from '@ai-sdk/anthropic'
@@ -107,6 +107,10 @@ export function runAgentStream({ agent, userId, messages }: RunOptions) {
     system: agent.systemPrompt || `你是 ${agent.name}，一个运行在 AgentBlog 上的助手。`,
     messages,
     tools: toolsMap,
+    // Agent loop：允许多步工具调用（调工具→看结果→继续推理→再调→…→最终答复）。
+    // v5 用 stopWhen + stepCountIs(n) 取代 v4 的 maxSteps；默认 stepCountIs(1) 只调一轮就停。
+    // 设为 5 覆盖查文章→写→改等多步场景，超过 5 步通常是死循环且每步耗 token，故设上限防成本失控。
+    stopWhen: stepCountIs(5),
     onFinish: async ({ totalUsage }) => {
       // 🔴 流后按实际 token 扣费（向上取整防漏扣）
       // v5 用 totalUsage（所有步骤 token 总和，含工具调用多步），而非单步 usage；

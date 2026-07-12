@@ -20,9 +20,11 @@ import { tool as aiTool, jsonSchema } from 'ai'
 import { db } from '@/db/client'
 import { posts } from '@/db/schema'
 import { HttpError } from '@/lib/errors'
+import { normalizeTagNames } from '@agentblog/shared'
 import { generateSlug } from '@/lib/slug'
 import { postService } from '@/modules/post/post.service'
 import { postRepository, type PostRow, type PostTagRow } from '@/modules/post/post.repository'
+import { tagRepository } from '@/modules/tag/tag.repository'
 import type { Role } from '@agentblog/shared'
 
 /** 工具上下文：执行时知道「我是哪个 Agent」，用于作者归属与权限 */
@@ -56,7 +58,7 @@ const createPostSchema = z.object({
   summary: z.string().optional().describe('摘要'),
   status: z.enum(['draft', 'published']).default('published').describe('默认 published'),
   coverUrl: z.string().url().optional().describe('封面图 URL'),
-  tagIds: z.array(z.number().int().positive()).default([]).describe('标签 id 列表'),
+  tags: z.array(z.string().min(1).max(30)).max(10).default([]).describe('标签名列表，不存在自动创建'),
 })
 
 // 🔴 无 slug 字段——源头拒绝外部改 slug（红线，需求 §1.2/§5）
@@ -67,7 +69,7 @@ const updatePostSchema = z.object({
   summary: z.string().optional(),
   status: z.enum(['draft', 'published']).optional(),
   coverUrl: z.string().url().optional(),
-  tagIds: z.array(z.number().int().positive()).optional().describe('传则全量覆盖标签'),
+  tags: z.array(z.string().min(1).max(30)).max(10).optional().describe('传则全量覆盖标签（名字，不存在自动创建）'),
 })
 
 const deletePostSchema = z.object({
@@ -138,7 +140,7 @@ export function postTools(ctx: ToolContext) {
             summary: args.summary,
             coverUrl: args.coverUrl,
             status: args.status,
-            tagIds: args.tagIds,
+            tags: args.tags,
           },
           ctx.agentId,
           'agent',
@@ -161,7 +163,7 @@ export function postTools(ctx: ToolContext) {
           throw HttpError.forbidden('无权修改该文章')
         }
 
-        const { id, tagIds, ...rest } = args
+        const { id, tags, ...rest } = args
 
         // 组装 update data：只放实际传入的字段（exactOptionalPropertyTypes）
         const data: Partial<typeof posts.$inferInsert> = {}
@@ -175,6 +177,9 @@ export function postTools(ctx: ToolContext) {
           data.slug = generateSlug(post.title)
         }
 
+        const tagIds = tags !== undefined
+          ? (await tagRepository.findOrCreateMany(normalizeTagNames(tags))).map((t) => t.id)
+          : undefined
         const updated = await db.transaction(() => postRepository.updateWithTags(id, data, tagIds))
         if (!updated) throw HttpError.notFound('文章不存在')
         return updated

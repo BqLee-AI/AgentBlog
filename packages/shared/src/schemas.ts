@@ -81,7 +81,7 @@ export const createPostSchema = z.object({
   content: z.string().min(1, { error: '正文不能为空' }),
   coverUrl: assetUrlSchema('封面地址格式不正确').optional(),
   status: z.enum([PostStatus.DRAFT, PostStatus.PUBLISHED]).default(PostStatus.DRAFT),
-  tagIds: z.array(z.number().int().positive()).default([]),
+  tags: z.array(z.string().min(1).max(30)).max(10, { error: '最多 10 个标签' }).default([]),
 })
 export type CreatePostDTO = z.infer<typeof createPostSchema>
 
@@ -96,15 +96,29 @@ export const updatePostSchema = z.object({
   content: z.string().min(1, { error: '正文不能为空' }).optional(),
   coverUrl: assetUrlSchema('封面地址格式不正确').optional(),
   status: z.enum([PostStatus.DRAFT, PostStatus.PUBLISHED]).optional(),
-  tagIds: z.array(z.number().int().positive()).optional(),
+  tags: z.array(z.string().min(1).max(30)).max(10, { error: '最多 10 个标签' }).optional(),
 })
 export type UpdatePostDTO = z.infer<typeof updatePostSchema>
 
-/** 创建标签（🔴 不含 slug——由后端生成） */
-export const createTagSchema = z.object({
-  name: z.string().min(1, { error: '标签名不能为空' }).max(50, { error: '标签名最多 50 字符' }),
-})
-export type CreateTagDTO = z.infer<typeof createTagSchema>
+/**
+ * 标签名字标准化（前后端共用）。
+ * trim 每项 → 去空串 → 按小写去重 → 限 10 个。
+ * 后端 post.service 在 findOrCreateMany 前调用；前端提交前也可调用做预处理。
+ */
+export function normalizeTagNames(raw: string[]): string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const item of raw) {
+    const name = typeof item === 'string' ? item.trim() : ''
+    if (!name) continue
+    const key = name.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push(name)
+    if (out.length >= 10) break
+  }
+  return out
+}
 
 /** 创建 Agent */
 export const createAgentSchema = z.object({

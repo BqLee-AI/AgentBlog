@@ -3,9 +3,10 @@
  *
  * 纯 Drizzle 查询。tag 是简单实体，无业务规则，service 很薄。
  */
-import { desc, eq } from 'drizzle-orm'
+import { desc, eq, inArray, sql } from 'drizzle-orm'
 import { db } from '@/db/client'
 import { tags } from '@/db/schema'
+import { generateSlug } from '@/lib/slug'
 
 const tagColumns = {
   id: tags.id,
@@ -53,5 +54,44 @@ export const tagRepository = {
   /** 删除标签（post_tag 外键 cascade，文章关联自动清除） */
   async delete(id: number): Promise<void> {
     await db.delete(tags).where(eq(tags.id, id))
+  },
+
+  /**
+   * 按名字批量查找或创建标签（发文时自动管理标签，大小写不敏感去重）。
+   * ⚠️ 应在 post.service 的 db.transaction 内调用，保证原子。
+   * - 已存在（name 大小写不敏感匹配）→ 复用
+   * - 不存在 → 插入（slug 用 generateSlug(name)）
+   * 返回值顺序与输入 names 顺序对齐（含重复 name 的去重）。
+   */
+  async findOrCreateMany(names: string[]): Promise<TagRow[]> {
+    if (names.length === 0) return []
+    // 大小写不敏感查询：lower(name) IN (lower(?), ...)
+    const lowered = names.map((n) => n.toLowerCase())
+    const existing = await db
+      .select(tagColumns)
+      .from(tags)
+      .where(inArray(sql`lower(${tags.name})`, lowered))
+
+    const existingByLower = new Map(existing.map((t) => [t.name.toLowerCase(), t]))
+    // 按输入 names 顺序去重（保留首次出现的大小写），解析出 id
+    const seen = new Set<string>()
+    const result: TagRow[] = []
+    for (const name of names) {
+      const key = name.toLowerCase()
+      if (seen.has(key)) continue
+      seen.add(key)
+      const hit = existingByLower.get(key)
+      if (hit) {
+        result.push(hit)
+      } else {
+        // 不存在则创建（UNIQUE(name) 兜底并发，catch 后回查）
+        const created = await this.create({ name, slug: generateSlug(name) })
+        if (created) {
+          existingByLower.set(key, created)
+          result.push(created)
+        }
+      }
+    }
+    return result
   },
 }

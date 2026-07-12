@@ -32,7 +32,6 @@ const NotFound = lazyPage(() => import('@/pages/not-found.page'))
 const AdminLayout = lazyPage(() => import('@/pages/admin/layout.page'))
 const AdminPosts = lazyPage(() => import('@/pages/admin/posts.page'))
 const PostEdit = lazyPage(() => import('@/pages/admin/post-edit.page'))
-const AdminTags = lazyPage(() => import('@/pages/admin/tags.page'))
 const AdminUsers = lazyPage(() => import('@/pages/admin/users.page'))
 const AdminCredits = lazyPage(() => import('@/pages/admin/credits.page'))
 const AdminAgent = lazyPage(() => import('@/pages/admin/agent.page'))
@@ -92,14 +91,6 @@ export const router = createBrowserRouter([
       { path: 'posts', element: <AdminPosts /> },
       { path: 'posts/new', element: <PostEdit /> },
       { path: 'posts/:id/edit', element: <PostEdit /> },
-      {
-        path: 'tags',
-        element: (
-          <RequireRole roles={ADMIN_PLUS}>
-            <AdminTags />
-          </RequireRole>
-        ),
-      },
       {
         path: 'users',
         element: (
