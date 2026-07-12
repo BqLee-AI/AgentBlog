@@ -27,6 +27,8 @@ import { postRepository, type PostRow, type PostTagRow } from '@/modules/post/po
 import { tagRepository } from '@/modules/tag/tag.repository'
 import type { Role } from '@agentblog/shared'
 
+const DEFAULT_GENERATED_POST_COVER_URL = '/sample-covers/quiet-window.svg'
+
 /** 工具上下文：执行时知道「我是哪个 Agent」，用于作者归属与权限 */
 export interface ToolContext {
   agentId: number
@@ -138,7 +140,7 @@ export function postTools(ctx: ToolContext) {
             title: args.title,
             content: args.content,
             summary: args.summary,
-            coverUrl: args.coverUrl,
+            coverUrl: args.coverUrl ?? DEFAULT_GENERATED_POST_COVER_URL,
             status: args.status,
             tags: args.tags,
           },
