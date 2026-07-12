@@ -33,18 +33,19 @@ describe('MCP 工具', () => {
     expect(names.length).toBe(5)
   })
 
-  it('🔴 create_post 产出文章 authorType=agent', async () => {
+  it('🔴 create_post 产出 Agent 作者与默认封面', async () => {
     const { postTools } = await import('@/ai/tools')
     const tools = postTools(toolCtx)
     const result = await tools.create_post.handler({
       title: 'Agent写的文章',
       content: '由 Agent 创作',
       status: 'published',
-      tagIds: [],
+      tags: [],
     })
     // handler 返回创建的文章（含 authorType）
-    const post = 'post' in result ? (result as { post: { authorType: string } }).post : result
+    const post = 'post' in result ? (result as { post: { authorType: string; coverUrl: string | null } }).post : result
     expect((post as { authorType: string }).authorType).toBe('agent')
+    expect((post as { coverUrl: string | null }).coverUrl).toBe('/sample-covers/quiet-window.svg')
   })
 
   it('createMcpServer 注册成功（5 工具，不抛错）', async () => {
@@ -60,8 +61,8 @@ describe('MCP 工具', () => {
     const tools = postTools(toolCtx)
 
     // 造一篇草稿（agent 作者）+ 一篇已发布
-    await postService.create({ title: '草稿', content: 'x', status: 'draft', tagIds: [] }, toolCtx.agentId, 'agent')
-    await postService.create({ title: '已发布', content: 'x', status: 'published', tagIds: [] }, toolCtx.agentId, 'agent')
+    await postService.create({ title: '草稿', content: 'x', status: 'draft', tags: [] }, toolCtx.agentId, 'agent')
+    await postService.create({ title: '已发布', content: 'x', status: 'published', tags: [] }, toolCtx.agentId, 'agent')
 
     const result = await tools.list_posts.handler({ limit: 50, offset: 0 })
     // 🔴 全是 published
