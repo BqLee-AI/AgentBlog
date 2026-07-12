@@ -90,5 +90,9 @@ export function createMcpServer(ctx: ToolContext): McpServer {
     inputSchema: tools.delete_post.shape,
   }, async (args) => wrapTool('delete_post', () => tools.delete_post.handler(args), ctx))
 
+  server.registerTool('upload_image', {
+    description: tools.upload_image.description,
+    inputSchema: tools.upload_image.shape,
+  }, async (args) => wrapTool('upload_image', () => tools.upload_image.handler(args), ctx))
   return server
 }
