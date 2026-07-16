@@ -3,7 +3,7 @@
  *
  * 决策（#24）：直接测 postTools(ctx) + createMcpServer(ctx)，不走 HTTP transport。
  * 验证：
- *   - postTools 返回恰好 5 个工具
+ *   - postTools 返回恰好 6 个工具
  *   - create_post 的 authorType='agent'
  *   - createMcpServer 注册成功（不抛错）
  */
@@ -25,12 +25,12 @@ afterAll(async () => {
 })
 
 describe('MCP 工具', () => {
-  it('postTools 返回 5 个工具', async () => {
+  it('postTools 返回 6 个工具', async () => {
     const { postTools } = await import('@/ai/tools')
     const tools = postTools(toolCtx)
     const names = Object.keys(tools).sort()
-    expect(names).toEqual(['create_post', 'delete_post', 'get_post', 'list_posts', 'update_post'])
-    expect(names.length).toBe(5)
+    expect(names).toEqual(['create_post', 'delete_post', 'get_post', 'list_posts', 'update_post', 'upload_image'])
+    expect(names.length).toBe(6)
   })
 
   it('🔴 create_post 产出 Agent 作者与默认封面', async () => {
@@ -48,11 +48,11 @@ describe('MCP 工具', () => {
     expect((post as { coverUrl: string | null }).coverUrl).toBe('/sample-covers/quiet-window.svg')
   })
 
-  it('createMcpServer 注册成功（5 工具，不抛错）', async () => {
+  it('createMcpServer 注册成功（6 工具，不抛错）', async () => {
     const { createMcpServer } = await import('@/mcp/server')
     const server = createMcpServer(toolCtx)
     expect(server).toBeTruthy()
-    // server 实例创建即代表 5 工具注册成功（内部 registerTool 5 次）
+    // server 实例创建即代表 6 工具注册成功（内部 registerTool 6 次）
   })
 
   it('list_posts 仅返回 published', async () => {
