@@ -2,6 +2,11 @@ name: Deploy
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -12,6 +17,13 @@ concurrency:
 
 jobs:
   deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      )
     runs-on: ubuntu-latest
     environment: production
     env:
@@ -20,6 +32,7 @@ jobs:
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
       DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
       DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+      DEPLOY_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
     steps:
       - name: Configure SSH
@@ -31,7 +44,7 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
 
-      - name: Deploy main to server
+      - name: Deploy tested revision to server
         shell: bash
         run: |
           set -euo pipefail
@@ -39,17 +52,22 @@ jobs:
             -o BatchMode=yes \
             -o StrictHostKeyChecking=yes \
             -p "${DEPLOY_PORT:-22}" \
-            "$DEPLOY_USER@$DEPLOY_HOST" 'bash -s' <<'REMOTE'
+            "$DEPLOY_USER@$DEPLOY_HOST" "DEPLOY_SHA='$DEPLOY_SHA' bash -s" <<'REMOTE'
           set -euo pipefail
 
           cd /opt/agentblog
-          git pull --ff-only origin main
+          git fetch --no-tags origin main
+          git cat-file -e "${DEPLOY_SHA}^{commit}"
+          git checkout --detach "$DEPLOY_SHA"
+
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            --volume "$PWD:/app" \
+            --workdir /app \
+            oven/bun:1.3.11 \
+            sh -c 'bun install --frozen-lockfile && bun run --filter @agentblog/web build -- --outDir /app/web/dist --emptyOutDir'
+
           docker compose up -d --build
-
-          cd apps/web
-          bun install --frozen-lockfile
-          bun run build
-
           sudo nginx -t
           sudo systemctl reload nginx
           REMOTE
