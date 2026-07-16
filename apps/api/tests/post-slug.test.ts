@@ -32,7 +32,7 @@ describe('🔴 slug 不可变', () => {
 
     // 草稿：slug=null
     const draft = await postService.create(
-      { title: '我的草稿', content: '正文', status: 'draft', tagIds: [] },
+      { title: '我的草稿', content: '正文', status: 'draft', tags: [] },
       userId,
       'user',
     )
@@ -54,7 +54,7 @@ describe('🔴 slug 不可变', () => {
 
     // 直接发布一篇文章
     const post = await postService.create(
-      { title: '原标题', content: '正文', status: 'published', tagIds: [] },
+      { title: '原标题', content: '正文', status: 'published', tags: [] },
       userId,
       'user',
     )
@@ -81,7 +81,7 @@ describe('🔴 slug 不可变', () => {
 
     // 先发布一篇文章
     const post = await postService.create(
-      { title: '测试文章', content: 'x', status: 'published', tagIds: [] },
+      { title: '测试文章', content: 'x', status: 'published', tags: [] },
       user.id,
       'user',
     )
@@ -109,7 +109,7 @@ describe('🔴 slug 不可变', () => {
 
     // 草稿
     const draft = await postService.create(
-      { title: '纯草稿', content: 'x', status: 'draft', tagIds: [] },
+      { title: '纯草稿', content: 'x', status: 'draft', tags: [] },
       userId,
       'user',
     )
@@ -117,7 +117,7 @@ describe('🔴 slug 不可变', () => {
 
     // 草稿无 slug，getBySlug(null) 不适用；验证已发布的能取到
     const pub = await postService.create(
-      { title: '已发布', content: 'x', status: 'published', tagIds: [] },
+      { title: '已发布', content: 'x', status: 'published', tags: [] },
       userId,
       'user',
     )
